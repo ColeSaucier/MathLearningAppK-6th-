@@ -16,7 +16,7 @@ public class SceneCompleteMenu : MonoBehaviour
     public TextMeshProUGUI ratingText;
     public TextMeshProUGUI timeText;
     //public GameObject SceneCompleteCanvas;
-    public TextMeshPro repCounter;
+    public TextMeshProUGUI repCounter;
     public CanvasGroup sceneCanvasGroup;
     public CanvasGroup buttonCanvasGroup;
     public string completionRating = "";
@@ -39,20 +39,28 @@ public class SceneCompleteMenu : MonoBehaviour
     List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "NormalAddition", "NormalSubtraction", "MultiplicationV", "DivisionV", "LongMultiplication", "FractionFromShape", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
     public string currentScene;// = text.gameObject.name;
 
+    public GameObject barHolder;
+    public Image beatScoreBar;
+    public float repPaceTime;
+    public float totalTimeToBeatScore;
+    public float elapsedTime;
+
     // Start is called before the first frame update
     void Start()
     {
         sceneCanvasGroup.interactable = false;
 
         //retrieve data and create dataObject
-        sceneObject = new SceneData(); ////SceneData sceneObject = new SceneData();
-        filePath = Path.Combine(Application.dataPath, scenejsonFilePath); // Combine with the Assets folder
+        sceneObject = new SceneData();
+        filePath = Path.Combine(Application.persistentDataPath, scenejsonFilePath);
+        //filePath = Path.Combine(Application.dataPath, scenejsonFilePath); // Combine with the Assets folder
         sceneJsonString = File.ReadAllText(filePath);
         sceneObject = JsonUtility.FromJson<SceneData>(sceneJsonString);
 
         //retrieve data and create dataObject
-        variableObject = new VariableData(); ////VariableData variableObject = new VariableData();
-        filePath = Path.Combine(Application.dataPath, variablejsonFilePath); // Combine with the Assets folder
+        variableObject = new VariableData();
+        filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
+        //filePath = Path.Combine(Application.dataPath, variablejsonFilePath); // Combine with the Assets folder
         variableJsonString = File.ReadAllText(filePath);
         variableObject = JsonUtility.FromJson<VariableData>(variableJsonString);
 
@@ -61,6 +69,10 @@ public class SceneCompleteMenu : MonoBehaviour
         currentScene = SceneManager.GetActiveScene().name;
         variableObject.currentScene = currentScene;
         startTime = Time.time;
+
+        //Vars for beatScoreBar
+        totalTimeToBeatScore = sceneObject.bestTime - variableObject.timeElapsed;
+        repPaceTime = totalTimeToBeatScore / (sceneObject.numRepetitions - variableObject.counterScene);
     }
 
     // Update is called once per frame
@@ -69,16 +81,27 @@ public class SceneCompleteMenu : MonoBehaviour
         if (SceneComplete)
         {
             SceneComplete = false;
+            barHolder.SetActive(false);
             sceneComplete();
         }
+        // checks if variable 
+        elapsedTime = Time.time - startTime;
+        // beatScoreBar Updating
+        if (elapsedTime > totalTimeToBeatScore)
+            beatScoreBar.color = Color.red;
+        else if (elapsedTime > repPaceTime)
+           beatScoreBar.color = Color.yellow;
+        else
+            beatScoreBar.fillAmount = (float)(0.1 + 0.9 * ((repPaceTime - elapsedTime) / repPaceTime));
+
     }
 
     void sceneComplete()
     {
         //Record the duration of one scene repetition, cumalatively into variableObject
         //Raise rep counter
-        float elapsedTime = Time.time - startTime;
-        variableObject.timeElapsed += (int)elapsedTime;
+        float elapsedTimeFinal = Time.time - startTime;
+        variableObject.timeElapsed += (int)elapsedTimeFinal;
         variableObject.counterScene++;
         repCounter.text = $"{variableObject.counterScene}/{sceneObject.numRepetitions}";
 
@@ -86,10 +109,11 @@ public class SceneCompleteMenu : MonoBehaviour
         if (variableObject.counterScene != sceneObject.numRepetitions)
         {
             //saveData
-            filePath = Path.Combine(Application.dataPath, variablejsonFilePath);
+            filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
             string variableJsonString = JsonUtility.ToJson(variableObject);
             File.WriteAllText(filePath, variableJsonString);
-            RestartScene();
+            string thisScene = SceneManager.GetActiveScene().name;
+            SceneManager.LoadScene(thisScene);
         }
         if (variableObject.counterScene == sceneObject.numRepetitions)
         {
@@ -103,6 +127,8 @@ public class SceneCompleteMenu : MonoBehaviour
         if (variableObject.timeElapsed < sceneObject.bestTime)
         {
             sceneObject.bestTime = variableObject.timeElapsed;
+            timeText.color = Color.blue;
+            ratingText.color = Color.blue;
         } 
 
         // Determine Rating (+record it)
@@ -116,9 +142,9 @@ public class SceneCompleteMenu : MonoBehaviour
 
         //Assigns repetitions menu complete variables
         sceneObject.bestRating = completionRating;
-        ratingText.text = completionRating;
-        int minutes = sceneObject.bestTime / 60;
-        int seconds = sceneObject.bestTime % 60;
+        ratingText.text = completionRating; 
+        int minutes = variableObject.timeElapsed / 60; //sceneObject.bestTime
+        int seconds = variableObject.timeElapsed % 60;
         string timeString = $"{minutes}min :{seconds}sec";
         timeText.text = timeString;
 
@@ -127,15 +153,16 @@ public class SceneCompleteMenu : MonoBehaviour
         variableObject.timeElapsed = 0;
 
         //saveData
-        filePath = Path.Combine(Application.dataPath, variablejsonFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
         string variableJsonString = JsonUtility.ToJson(variableObject);
         File.WriteAllText(filePath, variableJsonString);
+        
+        filePath = Path.Combine(Application.persistentDataPath, scenejsonFilePath);
         string sceneJsonString = JsonUtility.ToJson(sceneObject);
-        filePath = Path.Combine(Application.dataPath, scenejsonFilePath);
         File.WriteAllText(filePath, sceneJsonString);
 
         //save completed string
-        filePath = Path.Combine(Application.dataPath, completedLevelTextFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
         AddCompletedScene(currentScene);
 
         //Introduce the scene canvas
@@ -147,11 +174,24 @@ public class SceneCompleteMenu : MonoBehaviour
 
     public void RestartScene()
     {
+        //Reset variableObject
+        variableObject.counterScene = 0;
+        variableObject.timeElapsed = 0;
+        filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
+        string variableJsonString = JsonUtility.ToJson(variableObject);
+        File.WriteAllText(filePath, variableJsonString);
+
         string thisScene = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(thisScene);
     }
     public void GoToMenu()
     {
+        //Reset variableObject
+        variableObject.counterScene = 0;
+        variableObject.timeElapsed = 0;
+        filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
+        string variableJsonString = JsonUtility.ToJson(variableObject);
+        File.WriteAllText(filePath, variableJsonString);
         SceneManager.LoadScene("Menu");
     }
 
@@ -247,7 +287,7 @@ public class SceneCompleteMenu : MonoBehaviour
 
         //retrieve data and create dataObject
         allSceneRatingObject = new AllSceneRatingsData();
-        filePath = Path.Combine(Application.dataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
+        filePath = Path.Combine(Application.persistentDataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
         allSceneRatingsJsonString = File.ReadAllText(filePath);
         allSceneRatingObject = JsonUtility.FromJson<AllSceneRatingsData>(allSceneRatingsJsonString);
 
@@ -303,7 +343,7 @@ public class SceneCompleteMenu : MonoBehaviour
         allSceneRatingObject.LongDivision = dictionary["LongDivision"];
 
         //saveData
-        filePath = Path.Combine(Application.dataPath, allSceneRatingsjsonFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, allSceneRatingsjsonFilePath);
         string allSceneRatingsJsonString = JsonUtility.ToJson(allSceneRatingObject);
         File.WriteAllText(filePath, allSceneRatingsJsonString);
     }

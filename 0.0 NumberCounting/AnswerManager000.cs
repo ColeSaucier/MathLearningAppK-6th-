@@ -4,26 +4,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class AnswerManager07 : MonoBehaviour
+public class AnswerManager000 : MonoBehaviour
 {
-	public BabySubtractionCircleGenerator babySubtractionCircles;
-
     // References needed for answer button
     public Button Button;
     public string userInput = "";
-    private bool isInputActive = false;
+    public bool isInputActive = false;
     public TextMeshProUGUI inputText;
     public CanvasGroup popUpCanvasGroup;
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
+
+    public SceneCompleteMenu sceneCompleteScript;
+    public RowObject AnswerHolder;
 
     // Scene Variables
     public string answerString;
     public bool SceneComplete;
-    public SceneCompleteMenu sceneCompleteScript;
-    
-    //Mobile Keyboard Enabling
-    public Canvas mobileKeyboard;
-    private bool mobileVersion = true;
-    public TextMeshProUGUI KeyboardInputText;
 
     public void Update()
     {
@@ -53,7 +51,7 @@ public class AnswerManager07 : MonoBehaviour
 
     public void checkStringInput()
     {
-        answerString = babySubtractionCircles.resultObjects.ToString();
+        answerString = AnswerHolder.answer.ToString();
 
         if (mobileVersion)
         {
@@ -79,11 +77,16 @@ public class AnswerManager07 : MonoBehaviour
         // Close answerbox
         popUpCanvasGroup.alpha = 0f;
     }
-
     public void activateInput()
     {
         isInputActive = !isInputActive;
-        
+
+        /*
+        if (mobileVersion == true)
+        {
+            mobileKeyboard.enabled = !mobileKeyboard.enabled;
+        }
+        */
         if (isInputActive == true)
         { 
             // Reset answerbox input

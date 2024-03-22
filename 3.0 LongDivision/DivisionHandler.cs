@@ -74,6 +74,7 @@ public class DivisionHandler : MonoBehaviour
                 popUpCanvasGroup.alpha = 0f;
                 popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
                 isInputActive = false;
+                Button.image.color = Color.white;
                 // Code to deactivate mobile keyboard here (if mobile device)
 
                 // Scene ALMOST complete circumstance
@@ -205,7 +206,7 @@ public class DivisionHandler : MonoBehaviour
         // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
         popUpCanvasGroup.alpha = 1f;
         popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-
+        Button.image.color = Color.grey;
 
         // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
     }

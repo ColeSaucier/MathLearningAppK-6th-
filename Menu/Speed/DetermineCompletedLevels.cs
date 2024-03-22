@@ -70,11 +70,11 @@ public class DetermineCompletedLevels : MonoBehaviour
     private AllSceneRatingsData allSceneRatingObject;
     void Start()
     {
-        filePath = Path.Combine(Application.dataPath, completedLevelTextFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
         completedLevels = GetUniqueValuesFromFile();
         //retrieve data and create dataObject + UpdateValue_AllSceneRatings()
         allSceneRatingObject = new AllSceneRatingsData();
-        filePath = Path.Combine(Application.dataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
+        filePath = Path.Combine(Application.persistentDataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
         allSceneRatingsJsonString = File.ReadAllText(filePath);
         allSceneRatingObject = JsonUtility.FromJson<AllSceneRatingsData>(allSceneRatingsJsonString);
         
