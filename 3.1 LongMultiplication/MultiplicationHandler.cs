@@ -48,7 +48,7 @@ public class MultiplicationHandler : MonoBehaviour
     public bool finalAnswerNeeded;
 
     public Canvas mobileKeyboard;
-    private bool mobileVersion = false;
+    private bool mobileVersion = true;
     public TextMeshProUGUI KeyboardInputText;
     void Start()
     {
@@ -125,9 +125,10 @@ public class MultiplicationHandler : MonoBehaviour
     {
         if (mobileVersion)
         {
-            inputText.text = KeyboardInputText.text;
+            inputText.text = KeyboardInputText.text;//.ToString();
+            KeyboardInputText.text = "";
         }
-        
+
         if (inputText.text == currentAnswer.ToString())
         {
             if (finalAnswerNeeded == true)
@@ -158,7 +159,10 @@ public class MultiplicationHandler : MonoBehaviour
             }
         }
         else
+        {
+            Handheld.Vibrate();
             ResetScene();
+        }
     }
     public void confirmNextEqAndAnswer()
     {

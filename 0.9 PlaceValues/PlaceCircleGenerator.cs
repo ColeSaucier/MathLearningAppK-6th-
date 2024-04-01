@@ -116,6 +116,7 @@ public class PlaceCircleGenerator : MonoBehaviour
             counter100 = 0;
             counter10 = 0;
             counter1 = 0;
+            Handheld.Vibrate();
         }
     }
 }

@@ -23,8 +23,12 @@ public class HomescreenSceneManager : MonoBehaviour
 
     private void Start()
     {
-        filePath = Path.Combine(Application.dataPath, completedLevelTextFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
         completedLevels = GetUniqueValuesFromFile();
+        
+        currentLevel = completedLevels[completedLevels.Count - 1];
+        int index = levelOrder.IndexOf(currentLevel);
+        currentLevel = levelOrder[index + 1];
     }
 
     List<string> GetUniqueValuesFromFile()
@@ -43,15 +47,14 @@ public class HomescreenSceneManager : MonoBehaviour
     {
         HideMenu();
         ShowLoadingBar();
-        if (completedLevels.Count == 0)
-            scenesToLoad.Add(SceneManager.LoadSceneAsync("NumberCounting"));
+        if (completedLevels.Count != 0)
+        {
+            scenesToLoad.Add(SceneManager.LoadSceneAsync(currentLevel));
+        }
         else
         { 
-            currentLevel = completedLevels[completedLevels.Count - 1];
-            int index = levelOrder.IndexOf(currentLevel);
-            currentLevel = levelOrder[index + 1];
-
-            scenesToLoad.Add(SceneManager.LoadSceneAsync(currentLevel));
+            Debug.Log("This is a debug message.");
+            scenesToLoad.Add(SceneManager.LoadSceneAsync("NumberCounting"));
         }
         StartCoroutine(LoadingScreen());
     }

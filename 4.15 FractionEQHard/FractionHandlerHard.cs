@@ -27,7 +27,7 @@ public class FractionHandlerHard : MonoBehaviour
     void Start()
     {
         // Generate random numerator
-        numerator = Random.Range(0, 12);
+        numerator = Random.Range(1, 12);
         // Generate random denominator between numerator and 12
         denominator = Random.Range(numerator+1, 13);
         // Generate random multiplier between 1 and 10

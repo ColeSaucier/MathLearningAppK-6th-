@@ -145,6 +145,10 @@ public class AnswerManagerCircleGeneration : MonoBehaviour
             sceneCompleteScript.SceneComplete = true;
             Button.image.color = Color.green;
         }
+        else
+        {
+            Handheld.Vibrate();
+        }
     }
 
     public void ChangePlayerInput(int numberInput)

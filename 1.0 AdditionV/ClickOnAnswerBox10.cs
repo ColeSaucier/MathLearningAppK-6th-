@@ -58,6 +58,10 @@ public class ClickOnAnswerBox10 : MonoBehaviour
                 sceneCompleteScript.SceneComplete = true;
                 answerButton.image.color = Color.green;
             }
+            else
+            {
+                Handheld.Vibrate();
+            }
             // Reset input
             KeyboardInputText.text = "";
         }

@@ -77,6 +77,15 @@ public class AnswerManager415 : MonoBehaviour
                 sceneCompleteScript.SceneComplete = true;
                 Button.image.color = Color.green;
             }
+            else
+            {
+                if (secondInput == true)
+                    keyboardDenominator.text = "";
+                else
+                    keyboardNumerator.text = "";
+                
+                Handheld.Vibrate();
+            }
         }
         else
         {

@@ -145,6 +145,10 @@ public class clickOnAnswerBox0751 : MonoBehaviour
                             SetShapeAlpha(answer, 1f);
                         }
                     }
+                    else
+                    {
+                        Handheld.Vibrate();
+                    }
                 }
             }
         }

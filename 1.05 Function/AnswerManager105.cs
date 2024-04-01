@@ -163,6 +163,10 @@ public class AnswerManager105 : MonoBehaviour
                     Button.image.color = Color.green;
                 }
             }
+            else
+            {
+                Handheld.Vibrate();
+            }
             // Reset input
             KeyboardInputText.text = "";
         }

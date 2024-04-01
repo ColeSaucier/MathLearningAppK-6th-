@@ -59,7 +59,10 @@ public class AnswerManager000 : MonoBehaviour
             {
                 SceneComplete = true;
                 sceneCompleteScript.SceneComplete = true;
-                Button.image.color = Color.green;
+            }
+            else
+            {
+                Handheld.Vibrate();
             }
             // Reset input
             KeyboardInputText.text = "";

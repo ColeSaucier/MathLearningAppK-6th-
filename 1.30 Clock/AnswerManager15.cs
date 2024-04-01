@@ -72,7 +72,12 @@ public class AnswerManager15 : MonoBehaviour
                     minuteInputBool = false;
                 }
                 else
+                {
+                    Handheld.Vibrate();
                     minuteInputBool = false;
+                    KeyboardInputHour.text = "";
+                    KeyboardInputMinute.text = "";
+                }
             }
 
             else

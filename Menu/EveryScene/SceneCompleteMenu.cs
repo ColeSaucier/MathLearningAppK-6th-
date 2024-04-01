@@ -45,6 +45,10 @@ public class SceneCompleteMenu : MonoBehaviour
     public float totalTimeToBeatScore;
     public float elapsedTime;
 
+    public GameObject improveAnimation1;
+    public GameObject improveAnimation2;
+    public GameObject correctAnimation;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -88,7 +92,10 @@ public class SceneCompleteMenu : MonoBehaviour
         elapsedTime = Time.time - startTime;
         // beatScoreBar Updating
         if (elapsedTime > totalTimeToBeatScore)
+            {
             beatScoreBar.color = Color.red;
+            beatScoreBar.fillAmount = (float)(0.1);
+            }
         else if (elapsedTime > repPaceTime)
            beatScoreBar.color = Color.yellow;
         else
@@ -102,6 +109,7 @@ public class SceneCompleteMenu : MonoBehaviour
         //Raise rep counter
         float elapsedTimeFinal = Time.time - startTime;
         variableObject.timeElapsed += (int)elapsedTimeFinal;
+        //variableObject.counterScene = 0;
         variableObject.counterScene++;
         repCounter.text = $"{variableObject.counterScene}/{sceneObject.numRepetitions}";
 
@@ -129,7 +137,11 @@ public class SceneCompleteMenu : MonoBehaviour
             sceneObject.bestTime = variableObject.timeElapsed;
             timeText.color = Color.blue;
             ratingText.color = Color.blue;
+            improveAnimation1.SetActive(true);
+            improveAnimation2.SetActive(true);
         } 
+        else
+            correctAnimation.SetActive(true);
 
         // Determine Rating (+record it)
         completionRating = "Bronze";
@@ -160,10 +172,12 @@ public class SceneCompleteMenu : MonoBehaviour
         filePath = Path.Combine(Application.persistentDataPath, scenejsonFilePath);
         string sceneJsonString = JsonUtility.ToJson(sceneObject);
         File.WriteAllText(filePath, sceneJsonString);
+        //Debug.LogError("This work");
 
         //save completed string
         filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
         AddCompletedScene(currentScene);
+        //Debug.LogError("This didnt work");
 
         //Introduce the scene canvas
         sceneCanvasGroup.alpha = 1f;

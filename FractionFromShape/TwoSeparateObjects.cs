@@ -187,17 +187,131 @@ public class TwoSeparateObjects : MonoBehaviour
     }
 }
 */
+
+/* USE THIS OR THE NEW ONE
+    using UnityEngine;
+
+    public class TwoSeparateObjects : MonoBehaviour
+    {
+        public int numberOfSides;
+        public float radius;
+
+        public int numerator;
+        private MeshFilter meshFilter;
+        private Color32[] colors;
+
+
+        void Start()
+        {
+            numberOfSides = Random.Range(3, 9);
+            numerator = Random.Range(1, numberOfSides);
+            Vector3[] vertices = new Vector3[numberOfSides];
+
+            for (int i = 0; i < numberOfSides; i++)
+            {
+                float radians = (Mathf.PI / 2) + i * ((2 * Mathf.PI) / numberOfSides);
+                Vector3 pos = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians)) * radius;
+                vertices[i] = pos;
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.name = "Polygon Mesh";
+            mesh.vertices = vertices;
+
+            // Create a triangle list to fill the polygon
+            int[] triangles = new int[(numberOfSides - 2) * 3];
+            for (int i = 0; i < (numberOfSides - 2); i++)
+            {
+                triangles[i * 3] = 0;
+                triangles[i * 3 + 1] = i + 1;
+                triangles[i * 3 + 2] = i + 2;
+            }
+
+            mesh.SetIndices(triangles, MeshTopology.Triangles, 0);
+
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = mesh;
+
+            MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
+            Material material = new Material(Shader.Find("Sprites/Default"));
+            meshRenderer.sharedMaterial = material;
+
+            colors = new Color32[numberOfSides];
+
+            // Set the color for each vertex
+            for (int i = 0; i < numberOfSides; i++)
+            {
+                // Set the color for the first three triangles
+                if (i < numerator)
+                {
+                    colors[i] = Color.red;
+                }
+                else
+                {
+                    colors[i] = Color.white;
+                }
+            }
+
+            mesh.colors32 = colors;
+        }
+}
+*/
+/*
+using UnityEngine;
+using System.Linq;
+
+public class PolygonGenerator : MonoBehaviour
+{
+    public int numberOfSides;
+    public float radius;
+
+    private MeshFilter meshFilter;
+
+    void Start()
+    {
+        Vector3[] vertices = new Vector3[numberOfSides];
+
+        for (int i = 0; i < numberOfSides; i++)
+        {
+            float radians = (Mathf.PI / 2) + i * ((2 * Mathf.PI) / numberOfSides);
+            Vector3 pos = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians)) * radius;
+            vertices[i] = pos;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.name = "Polygon Mesh";
+        mesh.vertices = vertices;
+
+        mesh.SetIndices(Enumerable.Range(0, numberOfSides).ToArray(), MeshTopology.LineStrip, 0);
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        meshFilter = gameObject.AddComponent<MeshFilter>();
+        meshFilter.sharedMesh = mesh;
+
+        MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        Material material = new Material(Shader.Find("Standard"));
+        meshRenderer.sharedMaterial = material;
+    }
+}
+*/
+
 using UnityEngine;
 
 public class TwoSeparateObjects : MonoBehaviour
 {
     public int numberOfSides;
     public float radius;
+    public float spawnX; // Variable for x spawn position
+    public float spawnY; // Variable for y spawn position
 
     public int numerator;
     private MeshFilter meshFilter;
     private Color32[] colors;
-
 
     void Start()
     {
@@ -254,46 +368,8 @@ public class TwoSeparateObjects : MonoBehaviour
         }
 
         mesh.colors32 = colors;
+
+        // Set the spawn position based on spawnX and spawnY variables
+        transform.position = new Vector3(spawnX, spawnY, 0f);
     }
 }
-
-/*
-using UnityEngine;
-using System.Linq;
-
-public class PolygonGenerator : MonoBehaviour
-{
-    public int numberOfSides;
-    public float radius;
-
-    private MeshFilter meshFilter;
-
-    void Start()
-    {
-        Vector3[] vertices = new Vector3[numberOfSides];
-
-        for (int i = 0; i < numberOfSides; i++)
-        {
-            float radians = (Mathf.PI / 2) + i * ((2 * Mathf.PI) / numberOfSides);
-            Vector3 pos = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians)) * radius;
-            vertices[i] = pos;
-        }
-
-        Mesh mesh = new Mesh();
-        mesh.name = "Polygon Mesh";
-        mesh.vertices = vertices;
-
-        mesh.SetIndices(Enumerable.Range(0, numberOfSides).ToArray(), MeshTopology.LineStrip, 0);
-
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-
-        meshFilter = gameObject.AddComponent<MeshFilter>();
-        meshFilter.sharedMesh = mesh;
-
-        MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        Material material = new Material(Shader.Find("Standard"));
-        meshRenderer.sharedMaterial = material;
-    }
-}
-*/

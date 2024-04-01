@@ -99,6 +99,7 @@ public class AnswerManager41 : MonoBehaviour
                 }
                 else
                 {
+                    Handheld.Vibrate();
                     secondInput = false;
                     keyPanel1.SetActive(true);
                     keyPanel2.SetActive(false);

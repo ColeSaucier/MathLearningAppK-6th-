@@ -12,6 +12,7 @@ public class FractionMobileKeyboardController01 : MonoBehaviour
     public void NumberInput(int number)
     {
         secondInputBool = script.secondInput;
+        Vibrator.Vibrate(100);
 
         if (secondInputBool == true)
             denominator.text += number.ToString();
@@ -23,6 +24,7 @@ public class FractionMobileKeyboardController01 : MonoBehaviour
     public void DeleteInput()
     {
         secondInputBool = script.secondInput;
+        Vibrator.Vibrate(100);
 
         if (secondInputBool == true)
         {
