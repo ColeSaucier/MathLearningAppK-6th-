@@ -145,9 +145,9 @@ public class SceneCompleteMenu : MonoBehaviour
 
         // Determine Rating (+record it)
         completionRating = "Bronze";
-        if (sceneObject.bestTime < sceneObject.goldTime)
+        if (sceneObject.bestTime <= sceneObject.goldTime)
             completionRating = "Gold";
-        if (sceneObject.bestTime < sceneObject.perfTime)
+        if (sceneObject.bestTime <= sceneObject.perfTime)
             completionRating = "Perfect++";
 
         UpdateValue_AllSceneRatings(currentScene, completionRating);
@@ -211,19 +211,43 @@ public class SceneCompleteMenu : MonoBehaviour
 
     public void BeginNextScene()
     {
-        //determine next scene
-        string thisScene = SceneManager.GetActiveScene().name;
-        int index = levelOrder.IndexOf(thisScene);
-        string nextScene = null;
-
-        // Check if the string was found and has a next element
-        if (index != -1 && index < levelOrder.Count - 1)
+        if (MixIt.mixBool)
         {
-            // Get the next string in the list
-            nextScene = levelOrder[index + 1];
-        }
+            //Same as MixIt StartRandomMixLevel()
+            if (MixIt.mixList.Count > 0)
+            {
+                // Generate a random index within the bounds of mixList
+                int randomIndex = UnityEngine.Random.Range(0, MixIt.mixList.Count);
 
-        SceneManager.LoadScene(nextScene);
+                // Access the random entry from mixList
+                string nextScene = MixIt.mixList[randomIndex];
+
+                MixIt.mixList.Remove(nextScene);
+
+                SceneManager.LoadScene(nextScene);
+            }
+            else
+            {
+                //go back to menu
+                SceneManager.LoadScene("Speed");
+            }
+        }
+        else
+        {
+            //determine next scene
+            string thisScene = SceneManager.GetActiveScene().name;
+            int index = levelOrder.IndexOf(thisScene);
+            string nextScene = null;
+
+            // Check if the string was found and has a next element
+            if (index != -1 && index < levelOrder.Count - 1)
+            {
+                // Get the next string in the list
+                nextScene = levelOrder[index + 1];
+            }
+
+            SceneManager.LoadScene(nextScene);
+        }
     }
 
     void AddCompletedScene(string sceneName)

@@ -5,7 +5,7 @@ using TMPro;
 
 public class ClickHandler : MonoBehaviour
 {
-    public Color tintColor = Color.red; // Set your desired tint color in the Inspector
+    public Color tintColor = Color.blue; // Set your desired tint color in the Inspector
     public int num1 = 0;
     public int num2 = 0;
 
@@ -18,7 +18,6 @@ public class ClickHandler : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            reset_colors();
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hitInfo;
 
@@ -33,6 +32,7 @@ public class ClickHandler : MonoBehaviour
                 char num1 = objectName[0]; // Extracted from the object's name
                 char num2 = objectName[2]; // Extracted from the object's name
 
+                reset_colors();
                 change_colors(num1, num2);
                 update_additional_nums(num1, num2);
 
@@ -89,9 +89,16 @@ public class ClickHandler : MonoBehaviour
 
         for (int i = 0; i < textElements.Length; i++)
         {
-            if (i <= num1Int)
+            if (i == 0)
             {
-                textElements[i].text = num2Int.ToString();
+                textElements[0].text = num2Int.ToString();
+            }
+            else if (i <= num1Int)
+            {
+                if (num2Int == 10)
+                    textElements[i].text = num2Int.ToString();
+                else
+                    textElements[i].text = num2Int.ToString()+"+";
             }
 
             else

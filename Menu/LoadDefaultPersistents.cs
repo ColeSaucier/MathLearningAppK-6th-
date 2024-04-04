@@ -68,4 +68,12 @@ public class LoadDefaultPersistents : MonoBehaviour
         string filePath = Path.Combine(path, fileName);
         File.WriteAllText(filePath, jsonContent);
     }
+    public void reset()
+    {
+        string filePath = Application.persistentDataPath + "/CompletedLevel.txt";
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
 }
