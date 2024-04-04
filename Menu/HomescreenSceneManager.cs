@@ -18,7 +18,7 @@ public class HomescreenSceneManager : MonoBehaviour
     public string completedLevelTextFilePath;
     public string currentLevel;
 
-    List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "NormalAddition", "NormalSubtraction", "MultiplicationV", "DivisionV", "LongMultiplication", "FractionIdentification", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
+    List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "NormalAddition", "NormalSubtraction", "MultiplicationV", "DivisionV", "LongMultiplication", "FractionFromShape", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
 
 
     private void Start()
