@@ -4,8 +4,8 @@ public class ScreenModifierCalculator : MonoBehaviour
 {
     private const float iPhone12Width = 1170f; // iPhone 12's width in points
 
-    public static float portraitModifier; // Modifier for portrait orientation
-    public static float landscapeModifier; // Modifier for landscape orientation
+    public float portraitModifier; // Modifier for portrait orientation
+    public float landscapeModifier; // Modifier for landscape orientation
     public static bool isPortrait; // Boolean variable indicating if the screen is in portrait orientation
 
     private void Awake()

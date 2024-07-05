@@ -15,13 +15,19 @@ public class FractionHandlerHard : MonoBehaviour
     public TextMeshProUGUI numerator1Text;
     public TextMeshProUGUI denominator1Text;
 
+    public TextMeshProUGUI keyboardNumerator;
+    public TextMeshProUGUI keyboardDenominator;
+
     public AnswerManager415 answerManager;
     public GameObject ansPanel1;
     public GameObject ansPanel2;
+    public GameObject keyPanel1;
+    public GameObject keyPanel2;
+
     void Start()
     {
         // Generate random numerator
-        numerator = Random.Range(0, 12);
+        numerator = Random.Range(1, 12);
         // Generate random denominator between numerator and 12
         denominator = Random.Range(numerator+1, 13);
         // Generate random multiplier between 1 and 10
@@ -36,8 +42,11 @@ public class FractionHandlerHard : MonoBehaviour
         {
             ansPanel1.SetActive(false);
             ansPanel2.SetActive(true);
+            keyPanel1.SetActive(false);
+            keyPanel2.SetActive(true);
             answerManager.secondInput = true;
             numerator1Text.text = numeratorAns.ToString();
+            keyboardNumerator.text = numeratorAns.ToString();
 
             denominator1Text.text = "x";
             answerManager.numerator.text = numeratorAns.ToString();
@@ -46,6 +55,7 @@ public class FractionHandlerHard : MonoBehaviour
         {
             numerator1Text.text = "x";
             denominator1Text.text = denominatorAns.ToString();
+            keyboardDenominator.text = denominatorAns.ToString();
             answerManager.denominator.text = denominatorAns.ToString();
         }
 

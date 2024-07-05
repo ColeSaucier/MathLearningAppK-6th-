@@ -22,13 +22,13 @@ public class AnswerManager415 : MonoBehaviour
     public Button Button;
     public string userInput;
 
-    public GameObject ansPanel1;
-    public GameObject ansPanel2;
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI keyboardNumerator;
+    public TextMeshProUGUI keyboardDenominator;
+
     public void activateInput()
     {
-        copiedNumerator = fractionHandler.numeratorAns;
-        copiedDenominator = fractionHandler.denominatorAns;
-
         isInputActive = true;
         userInput = "";
 
@@ -47,19 +47,7 @@ public class AnswerManager415 : MonoBehaviour
             // Check for input and handle it
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                if (numerator.text == copiedNumerator.ToString() && denominator.text == copiedDenominator.ToString()) 
-                {
-                    SceneComplete = true;
-                    sceneCompleteScript.SceneComplete = true;
-                    Button.image.color = Color.green;
-                }
-
-                isInputActive = false;
-                // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                popUpCanvasGroup.alpha = 0f;
-                popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                Button.interactable = true;
-                // Code to deactivate mobile keyboard here (if mobile device)
+                checkStringInput();
             }
             else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
             {
@@ -74,6 +62,44 @@ public class AnswerManager415 : MonoBehaviour
                 denominator.text = userInput;
             else
                 numerator.text = userInput;
+        }
+    }
+    public void checkStringInput()
+    {
+        copiedNumerator = fractionHandler.numeratorAns;
+        copiedDenominator = fractionHandler.denominatorAns;
+
+        if (mobileVersion)
+        {
+            if (keyboardNumerator.text == copiedNumerator.ToString() && keyboardDenominator.text == copiedDenominator.ToString()) 
+            {
+                SceneComplete = true;
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
+            else
+            {
+                if (secondInput == true)
+                    keyboardDenominator.text = "";
+                else
+                    keyboardNumerator.text = "";
+                
+                Handheld.Vibrate();
+            }
+        }
+        else
+        {
+            if (numerator.text == copiedNumerator.ToString() && denominator.text == copiedDenominator.ToString()) 
+            {
+                SceneComplete = true;
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
+        
+            isInputActive = false;
+            // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
+            popUpCanvasGroup.alpha = 0f;
+            Button.interactable = true;
         }
     }
 }

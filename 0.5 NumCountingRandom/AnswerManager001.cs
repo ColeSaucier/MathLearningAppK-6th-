@@ -9,11 +9,12 @@ public class AnswerManager001 : MonoBehaviour
     // References needed for answer button
     public Button Button;
     public string userInput = "";
-    private bool isInputActive = false;
+    public bool isInputActive = false;
     public TextMeshProUGUI inputText;
     public CanvasGroup popUpCanvasGroup;
-    private TouchScreenKeyboard keyboard;
+    public Canvas mobileKeyboard;
     private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
 
     // Scene Variables
     public string answerString;
@@ -25,21 +26,14 @@ public class AnswerManager001 : MonoBehaviour
     {
         if (isInputActive)
         {
-            answerString = NotRowObject.answer.ToString();
-
-            if (mobileVersion)
-            {
-                inputText.text = keyboard.text;
-                
-                if (keyboard.status == TouchScreenKeyboard.Status.Done)
-                    checkStringInput();
-            }
-            else
+            // Real Keyboard Usage
+            if (mobileVersion != true)
             {
                 // Check for input and handle it
                 if (Input.GetKeyDown(KeyCode.Return))
                 {
                     checkStringInput();
+                    isInputActive = false;
                 }
                 else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
                 {
@@ -53,51 +47,56 @@ public class AnswerManager001 : MonoBehaviour
             }
         }
     }
-    void checkStringInput()
+
+    public void checkStringInput()
     {
-        if (inputText.text == answerString)
+        answerString = NotRowObject.answer.ToString();
+
+        if (mobileVersion)
         {
-            SceneComplete = true;
-            sceneCompleteScript.SceneComplete = true;
-            Button.image.color = Color.green;
+            if (KeyboardInputText.text == answerString)
+            {
+                SceneComplete = true;
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
+            else
+            {
+                Handheld.Vibrate();
+            }
+            // Reset input
+            KeyboardInputText.text = "";
+        }
+        else
+        {
+            if (inputText.text == answerString)
+            {
+                SceneComplete = true;
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
         }
 
-        // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
+        // Close answerbox
         popUpCanvasGroup.alpha = 0f;
-        isInputActive = false;
-        //Button.interactable = true;
-
-        // Close the mobile keyboard
-        if (keyboard != null)
-        {
-            keyboard.active = false;
-        }
     }
     public void activateInput()
     {
         isInputActive = !isInputActive;
-        userInput = "";
-        //Button.interactable = false;
 
         if (isInputActive == true)
         { 
-            // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
+            // Reset answerbox input
+            userInput = "";
+            inputText.text = "";
+            // Show answerbox
             popUpCanvasGroup.alpha = 1f;
-
-            if (mobileVersion)
-                keyboard = TouchScreenKeyboard.Open("", TouchScreenKeyboardType.NumberPad);
         }
         else
         {
-            // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
+            // Close answerbox
             popUpCanvasGroup.alpha = 0f;
             checkStringInput();
-
-            // Close the mobile keyboard
-            if (keyboard != null)
-            {
-                keyboard.active = false;
-            }
         }
     }
 }

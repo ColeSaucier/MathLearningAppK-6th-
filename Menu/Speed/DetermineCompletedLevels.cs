@@ -70,11 +70,13 @@ public class DetermineCompletedLevels : MonoBehaviour
     private AllSceneRatingsData allSceneRatingObject;
     void Start()
     {
-        filePath = Path.Combine(Application.dataPath, completedLevelTextFilePath);
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
         completedLevels = GetUniqueValuesFromFile();
+        //Debug.Log("completedLevels: " + string.Join(", ", completedLevels.ToArray()));
+
         //retrieve data and create dataObject + UpdateValue_AllSceneRatings()
         allSceneRatingObject = new AllSceneRatingsData();
-        filePath = Path.Combine(Application.dataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
+        filePath = Path.Combine(Application.persistentDataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
         allSceneRatingsJsonString = File.ReadAllText(filePath);
         allSceneRatingObject = JsonUtility.FromJson<AllSceneRatingsData>(allSceneRatingsJsonString);
         
@@ -183,6 +185,7 @@ public class DetermineCompletedLevels : MonoBehaviour
             while (!scenesToLoad[i].isDone)
             {
                 progressValue += scenesToLoad[i].progress;
+                // Error below, because no progressbar set in the level Menu
                 progressBar.fillAmount = progressValue / scenesToLoad.Count;
                 yield return null;
             }
@@ -214,7 +217,6 @@ public class DetermineCompletedLevels : MonoBehaviour
     [Serializable]
     public class AllSceneRatingsData
     {
-        public int goldTotal;
         public string NumberCounting;
         public string NumberCountingScattered;
         public string BasicAddition;

@@ -59,7 +59,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
             isInputActive = !isInputActive;
             if (isInputActive)
             {
-                answerButton.image.color = Color.gray;
+                answerButton.image.color = Color.grey;
 
                 VisibilityController visibilityController = GetComponent<VisibilityController>();
                 popUpCanvasGroup.alpha = 1f; // Set the pop-up canvas's alpha to 0 (fully transparent) initially
@@ -145,6 +145,10 @@ public class clickOnAnswerBox0751 : MonoBehaviour
                             SetShapeAlpha(answer, 1f);
                         }
                     }
+                    else
+                    {
+                        Handheld.Vibrate();
+                    }
                 }
             }
         }
@@ -181,7 +185,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
                         {
                             // Store the last clicked object or reference to the object
                             lastClickedObject = hit.collider.gameObject;
-                            hit.collider.GetComponent<Renderer>().material.color = Color.gray;
+                            hit.collider.GetComponent<Renderer>().material.color = new Color(210/255f, 0/255f, 0/255f);
 
                             // Now you have a reference to the object that was clicked, and you can use it as needed.
                             // For example, you can change its color or perform other actions.

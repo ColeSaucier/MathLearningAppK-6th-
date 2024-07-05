@@ -46,6 +46,10 @@ public class MultiplicationHandler : MonoBehaviour
     public int currentAnswer;
 
     public bool finalAnswerNeeded;
+
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
     void Start()
     {
     	FirstNum = UnityEngine.Random.Range(2, 100);
@@ -96,58 +100,68 @@ public class MultiplicationHandler : MonoBehaviour
     {
         if (isInputActive)
         {
-            // Code to activate mobile keyboard here (if mobile device)
-
-            // Check for input and handle it
-            if (Input.GetKeyDown(KeyCode.Return))
+            // Real Keyboard Usage
+            if (mobileVersion != true)
             {
-                if (inputText.text == currentAnswer.ToString())
+                // Check for input and handle it
+                if (Input.GetKeyDown(KeyCode.Return))
                 {
-                    if (finalAnswerNeeded == true)
-                    {
-                        //Scene Complete
-                        sceneCompleteScript.SceneComplete = true;
-                        Button.image.color = Color.green;
-                    }
-                    else if (Num1text.text == "")
-                    {
-                        Num1text.text = inputText.text;
-                        confirmNextEqAndAnswer();
-                    }
-                    else if (Num2text.text == "")
-                    {
-                        Num2text.text = inputText.text;
-                        confirmNextEqAndAnswer();
-                    }
-                    else if (Num3text.text == "")
-                    {
-                        Num3text.text = inputText.text;
-                        confirmNextEqAndAnswer();
-                    }
-                    else if (Num4text.text == "")
-                    {
-                        Num4text.text = inputText.text;
-                        confirmNextEqAndAnswer();
-                    }
+                    checkStringInput();
+                    //isInputActive = false;
+                }
+                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+                {
+                    userInput = userInput.Substring(0, userInput.Length - 1);
                 }
                 else
-                    ResetScene();
-                // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                popUpCanvasGroup.alpha = 0f;
-                popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                isInputActive = false;
-                // Code to deactivate mobile keyboard here (if mobile device)
+                {
+                    userInput += Input.inputString;
+                }
+                inputText.text = userInput;
+            }
+        }
+    }
+    public void checkStringInput()
+    {
+        if (mobileVersion)
+        {
+            inputText.text = KeyboardInputText.text;//.ToString();
+            KeyboardInputText.text = "";
+        }
 
-            }
-            else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+        if (inputText.text == currentAnswer.ToString())
+        {
+            if (finalAnswerNeeded == true)
             {
-                userInput = userInput.Substring(0, userInput.Length - 1);
+                //Scene Complete
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
             }
-            else
+            else if (Num1text.text == "")
             {
-                userInput += Input.inputString;
+                Num1text.text = inputText.text;
+                confirmNextEqAndAnswer();
             }
-            inputText.text = userInput;
+            else if (Num2text.text == "")
+            {
+                Num2text.text = inputText.text;
+                confirmNextEqAndAnswer();
+            }
+            else if (Num3text.text == "")
+            {
+                Num3text.text = inputText.text;
+                confirmNextEqAndAnswer();
+            }
+            else if (Num4text.text == "")
+            {
+                Num4text.text = inputText.text;
+                confirmNextEqAndAnswer();
+            }
+        }
+        else
+        {
+            Handheld.Vibrate();
+            ResetScene();
         }
     }
     public void confirmNextEqAndAnswer()
@@ -226,15 +240,22 @@ public class MultiplicationHandler : MonoBehaviour
 
     public void activateInput()
     {
-        isInputActive = true;
-        userInput = "";
+        isInputActive = !isInputActive;
 
-        // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
-        popUpCanvasGroup.alpha = 1f;
-        popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-
-
-        // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
+        if (isInputActive == true)
+        { 
+            // Reset answerbox input
+            userInput = "";
+            inputText.text = "";
+            // Show answerbox
+            popUpCanvasGroup.alpha = 1f;
+        }
+        else
+        {
+            // Close answerbox
+            popUpCanvasGroup.alpha = 0f;
+            checkStringInput();
+        }
     }
     public void ResetScene()
     {
@@ -249,6 +270,7 @@ public class MultiplicationHandler : MonoBehaviour
     	Equation4.SetActive(false);
         ArithmeticFrivilous.SetActive(false);
         currentAnswer = equation1Answer;
+        finalAnswerNeeded = false;
     }
     // Function to count the number of digits in a number
     int CountDigits(int number)

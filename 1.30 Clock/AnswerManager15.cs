@@ -20,12 +20,15 @@ public class AnswerManager15 : MonoBehaviour
     public CanvasGroup popUpCanvasGroup;
     public ClockGenerator clockGenerator;
     public Button Button;
-    public GameObject square1;
-    public GameObject square2;
 
     public string userInput;
 
-    public void activateInput()
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputHour;
+    public TextMeshProUGUI KeyboardInputMinute;
+    
+    void Start()
     {
         copiedHour = clockGenerator.randomHour;
         copiedMinute = clockGenerator.randomMinute * 5;
@@ -33,19 +36,76 @@ public class AnswerManager15 : MonoBehaviour
             copiedMinuteString = $"0{copiedMinute}";
         else
             copiedMinuteString = copiedMinute.ToString();
-        isInputActive = true;
-        minuteInputBool = false;
-        userInput = "";
+    }
+    public void activateInput()
+    {
+        isInputActive = !isInputActive;
 
-        // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
-        popUpCanvasGroup.alpha = 1f;
-        popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-        Button.interactable = false;
-        square1.SetActive(true);
-        square2.SetActive(true);
+        if (isInputActive == true)
+        { 
+            // Reset answerbox input
+            userInput = "";
+            minutes.text = "";
+            hour.text = "";
+            // Show answerbox
+            popUpCanvasGroup.alpha = 1f;
+        }
+        else
+        {
+            // Close answerbox
+            popUpCanvasGroup.alpha = 0f;
+            minuteInputBool = false;
+            //checkStringInput();
+        }
+    }
+    public void checkStringInput()
+    {
+        if (mobileVersion)
+        {
+            if (minuteInputBool == true)
+            {
+                if (KeyboardInputHour.text == copiedHour.ToString() && KeyboardInputMinute.text == copiedMinuteString) 
+                {
+                    SceneComplete = true;
+                    sceneCompleteScript.SceneComplete = true;
+                    Button.image.color = Color.green;
+                    minuteInputBool = false;
+                }
+                else
+                {
+                    Handheld.Vibrate();
+                    minuteInputBool = false;
+                    KeyboardInputHour.text = "";
+                    KeyboardInputMinute.text = "";
+                }
+            }
 
+            else
+            {
+                minuteInputBool = true;
+            }
+        }
+        else
+        {
+            if (minuteInputBool == true)
+            {
+                if (hour.text == copiedHour.ToString() && minutes.text == copiedMinuteString) 
+                {
+                    SceneComplete = true;
+                    sceneCompleteScript.SceneComplete = true;
+                    Button.image.color = Color.green;
+                    activateInput();
+                }
+                else
+                    activateInput();
+            }
 
-        // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
+            else
+            {
+                minuteInputBool = true;
+                userInput = "";
+            }
+        }
     }
 
     // Update is called once per frame
@@ -53,47 +113,27 @@ public class AnswerManager15 : MonoBehaviour
     {
         if (isInputActive)
         {
-            // Check for input and handle it
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (mobileVersion != true)
             {
-                if (minuteInputBool == true)
+                // Check for input and handle it
+                if (Input.GetKeyDown(KeyCode.Return))
                 {
-                    if (hour.text == copiedHour.ToString() && minutes.text == copiedMinuteString) 
-                    {
-                        SceneComplete = true;
-                        sceneCompleteScript.SceneComplete = true;
-                        Button.image.color = Color.green;
-                    }
-
-                    isInputActive = false;
-                    // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                    popUpCanvasGroup.alpha = 0f;
-                    popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                    square1.SetActive(false);
-                    square2.SetActive(false);
-                    Button.interactable = true;
-                    // Code to deactivate mobile keyboard here (if mobile device)
+                    checkStringInput();
                 }
-
+                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+                {
+                    userInput = userInput.Substring(0, userInput.Length - 1);
+                }
                 else
                 {
-                    minuteInputBool = true;
-                    userInput = "";
+                    userInput += Input.inputString;
                 }
-            }
-            else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
-            {
-                userInput = userInput.Substring(0, userInput.Length - 1);
-            }
-            else
-            {
-                userInput += Input.inputString;
-            }
 
-            if (minuteInputBool == true)
-                minutes.text = userInput;
-            else
-                hour.text = userInput;
+                if (minuteInputBool == true)
+                    minutes.text = userInput;
+                else
+                    hour.text = userInput;
+            }
         }
     }
 }

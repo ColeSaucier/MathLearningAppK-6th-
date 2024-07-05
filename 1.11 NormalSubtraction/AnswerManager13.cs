@@ -12,7 +12,7 @@ public class AnswerManager13 : MonoBehaviour
     public static int number4 = 4;
 
 	public string answerString;
-    public bool SceneComplete;
+    //public bool SceneComplete;
     public SceneCompleteMenu sceneCompleteScript;
 
     public TextMeshProUGUI tens1;
@@ -31,7 +31,11 @@ public class AnswerManager13 : MonoBehaviour
     public CanvasGroup popUpCanvasGroup; // Reference to the pop-up canvas's CanvasGroup component
 
 
-    //private TouchScreenKeyboard keyboard;
+    //Mobile Keyboard Enabling
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,94 +55,77 @@ public class AnswerManager13 : MonoBehaviour
         answerString = result.ToString();
     }
 
-    /*
-    public void TestPlayerInput()
+    public void Update()
     {
-        if (userInput == answerString)
+        if (isInputActive)
         {
-            SceneComplete = true;
-            Button.image.color = Color.green;
+            // Real Keyboard Usage
+            if (mobileVersion != true)
+            {
+                // Check for input and handle it
+                if (Input.GetKeyDown(KeyCode.Return))
+                {
+                    checkStringInput();
+                    isInputActive = false;
+                }
+                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+                {
+                    userInput = userInput.Substring(0, userInput.Length - 1);
+                }
+                else
+                {
+                    userInput += Input.inputString;
+                }
+                inputText.text = userInput;
+            }
         }
     }
-    */
 
     public void activateInput()
     {
-        isInputActive = true;
-        userInput = "";
+        isInputActive = !isInputActive;
 
-        // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
-        popUpCanvasGroup.alpha = 1f;
-        popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-
-
-        // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
-    }
-    public void Update()
-    {
-        if (isInputActive)
+        if (isInputActive == true)
+        { 
+            // Reset answerbox input
+            userInput = "";
+            inputText.text = "";
+            // Show answerbox
+            popUpCanvasGroup.alpha = 1f;
+        }
+        else
         {
-            // Code to activate mobile keyboard here (if mobile device)
-
-            // Check for input and handle it
-            if (Input.GetKeyDown(KeyCode.Return))
+            // Close answerbox
+            popUpCanvasGroup.alpha = 0f;
+            checkStringInput();
+        }
+    }
+    public void checkStringInput()
+    {
+        if (mobileVersion)
+        {
+            if (KeyboardInputText.text == answerString)
             {
-                if (inputText.text == answerString)
-                {
-                    SceneComplete = true;
-                    sceneCompleteScript.SceneComplete = true;
-                    Button.image.color = Color.green;
-                }
-
-                // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                popUpCanvasGroup.alpha = 0f;
-                popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                isInputActive = false;
-                // Code to deactivate mobile keyboard here (if mobile device)
-
-            }
-            else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
-            {
-                userInput = userInput.Substring(0, userInput.Length - 1);
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
             }
             else
             {
-                userInput += Input.inputString;
+                Handheld.Vibrate();
             }
-            inputText.text = userInput;
+            // Reset input
+            KeyboardInputText.text = "";
         }
-    }
-/*
-   
-    public void Update()
-    {
-        if (isInputActive)
+        else
         {
-            // Check if the mobile keyboard is active
-            if (keyboard != null && keyboard.active)
+            if (inputText.text == answerString)
             {
-                // Update userInput with the keyboard's text
-                userInput = keyboard.text;
-                inputText.text = userInput;
-
-                if (keyboard.done)
-                {
-                    if (inputText.text == answerString)
-                    {
-                        SceneComplete = true;
-                        Button.image.color = Color.green;
-                    }
-
-                    // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                    popUpCanvasGroup.alpha = 0f;
-                    popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                    isInputActive = false;
-
-                    // Close the mobile keyboard
-                    keyboard = null;
-                }
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
             }
         }
-    } 
-*/
+
+        // Close answerbox
+        popUpCanvasGroup.alpha = 0f;
+    }
 }

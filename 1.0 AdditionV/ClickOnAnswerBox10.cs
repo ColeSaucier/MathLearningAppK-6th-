@@ -16,60 +16,89 @@ public class ClickOnAnswerBox10 : MonoBehaviour
     private string userInput = "";
     public SceneCompleteMenu sceneCompleteScript;
 
-    void Start()
-    {
-        popUpCanvasGroup.alpha = 0f; // Set the pop-up canvas's alpha to 0 (fully transparent) initially
-        popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-    }
+    //Mobile Keyboard Enabling
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
 
-    void Update()
+    public void Update()
     {
         if (isInputActive)
         {
-            // Check for input and handle it
-            if (Input.GetKeyDown(KeyCode.Return))
+            // Real Keyboard Usage
+            if (mobileVersion != true)
             {
-                checkStringInput();
+                // Check for input and handle it
+                if (Input.GetKeyDown(KeyCode.Return))
+                {
+                    checkStringInput();
+                    isInputActive = false;
+                }
+                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+                {
+                    userInput = userInput.Substring(0, userInput.Length - 1);
+                }
+                else
+                {
+                    userInput += Input.inputString;
+                }
+                inputText.text = userInput;
             }
-            else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+        }
+    }
+
+    public void checkStringInput()
+    {
+        string answerString = AnswerCalc.correctAnswer.ToString();
+
+        if (mobileVersion)
+        {
+            if (KeyboardInputText.text == answerString)
             {
-                userInput = userInput.Substring(0, userInput.Length - 1);
+                sceneCompleteScript.SceneComplete = true;
+                answerButton.image.color = Color.green;
             }
             else
             {
-                userInput += Input.inputString;
+                Handheld.Vibrate();
             }
-
-            inputText.text = userInput;
+            // Reset input
+            KeyboardInputText.text = "";
         }
-    }
-    void checkStringInput()
-    {
-        if (inputText.text == AnswerCalc.correctAnswer.ToString())
+        else
         {
-            answerButton.image.color = Color.green;
-            sceneCompleteScript.SceneComplete = true;
+            if (inputText.text == answerString)
+            {
+                sceneCompleteScript.SceneComplete = true;
+                answerButton.image.color = Color.green;
+            }
         }
 
-        // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
+        // Close answerbox
         popUpCanvasGroup.alpha = 0f;
-        isInputActive = false;
     }
+
     public void activateInput()
     {
         isInputActive = !isInputActive;
 
-        if (isInputActive == true)
+        if (mobileVersion == true)
         {
-            userInput = "";
-            // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
-            popUpCanvasGroup.alpha = 1f;    
-
-            // Later code
-            // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
+            mobileKeyboard.enabled = !mobileKeyboard.enabled;
         }
-        if (isInputActive == false)
+
+        if (isInputActive == true)
+        { 
+            // Reset answerbox input
+            userInput = "";
+            inputText.text = "";
+            // Show answerbox
+            popUpCanvasGroup.alpha = 1f;
+        }
+        else
         {
+            // Close answerbox
+            popUpCanvasGroup.alpha = 0f;
             checkStringInput();
         }
     }

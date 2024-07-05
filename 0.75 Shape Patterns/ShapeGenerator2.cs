@@ -72,6 +72,7 @@ public class ShapeGenerator2 : MonoBehaviour
         Vector3 questionMarkPosition = shapeAnswer.transform.position;
         Instantiate(questionMarkPrefab, questionMarkPosition, Quaternion.identity, parentGroup.transform);
 
+        /*
         // Apply the offset to center the parent group
         if (ScreenModifierCalculator.isPortrait)
         {
@@ -80,7 +81,10 @@ public class ShapeGenerator2 : MonoBehaviour
         else
         {
             scale = ScreenModifierCalculator.landscapeModifier + 0.3f;
+            centerYOffset += 0.75f;
         }
+        */
+        scale = 1f;
         parentGroup.transform.localScale = new Vector3(localScale,localScale,localScale) * scale;
         parentGroup.transform.position = new Vector3(-(((shapeCount - 0.95f) / 2) * spacing * localScale * scale), centerYOffset, 0f);
     }

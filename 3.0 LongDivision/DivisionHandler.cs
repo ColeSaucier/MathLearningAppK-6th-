@@ -50,6 +50,9 @@ public class DivisionHandler : MonoBehaviour
     public GameObject Arrow3;
     public GameObject ArrowFinal;
 
+    public Canvas mobileKeyboard;
+    private bool mobileVersion = true;
+    public TextMeshProUGUI KeyboardInputText;
     void Start()
     {
         divisor = UnityEngine.Random.Range(2, 15);
@@ -64,139 +67,144 @@ public class DivisionHandler : MonoBehaviour
     public void Update()
     {
         if (isInputActive)
-        {
-            // Code to activate mobile keyboard here (if mobile device)
-
-            // Check for input and handle it
-            if (Input.GetKeyDown(KeyCode.Return))
+        {   
+            // Real Keyboard Usage
+            if (mobileVersion != true)
             {
-                // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-                popUpCanvasGroup.alpha = 0f;
-                popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-                isInputActive = false;
-                // Code to deactivate mobile keyboard here (if mobile device)
-
-                // Scene ALMOST complete circumstance
-                if (finalAnswerNeeded == true)
+                // Check for input and handle it
+                if (Input.GetKeyDown(KeyCode.Return))
                 {
-                    if (inputText.text == answer.ToString())
-                    {
-                        sceneCompleteScript.SceneComplete = true;
-                        Button.image.color = Color.green;
-                    }
-
-                    else
-                    {
-                        //Number not valid, restart
-                        ResetScene();
-                    }
+                    // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
+                    popUpCanvasGroup.alpha = 0f;
+                    popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
+                    isInputActive = false;
+                    Button.image.color = Color.white;
+                    checkstringinput();
                 }
-
-                // Subtraction Here
-                else if (!additionNeeded)
+                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
                 {
-                    string subtractionString = inputText.text;
-
-                    if (subtractCanvas1.alpha == 0f)
-                    {
-                        validateInput(subtractionString);
-                        if ((subtractInput % divisor) == 0)
-                            AddSubtractNumber(subtractInput, subtractNum1, resultNum1, subtractCanvas1);
-                        // Code to execute if subtractCanvasFinal alpha is 0
-                    }
-                    else if (subtractCanvas2.alpha == 0f)
-                    {
-                        validateInput(subtractionString);
-                        if ((subtractInput % divisor) == 0)
-                            AddSubtractNumber(subtractInput, subtractNum2, resultNum2, subtractCanvas2);
-                        // Code to execute if subtractCanvas3 alpha is 0
-                    }
-                    else if (subtractCanvas3.alpha == 0f)
-                    {
-                        validateInput(subtractionString);
-                        if ((subtractInput % divisor) == 0)
-                            AddSubtractNumber(subtractInput, subtractNum3, resultNum3, subtractCanvas3);
-                        // Code to execute if subtractCanvas2 alpha is 0
-                    }
-                    else if (subtractCanvasFinal.alpha == 0f)
-                    {
-                        validateInput(subtractionString);
-                        if ((subtractInput % divisor) == 0)
-                            AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
-                        // Code to execute if subtractCanvas1 alpha is 0
-                    }
-                    
-                    else
-                    {
-                        MoveNumbersUp();
-                        validateInput(subtractionString);
-                        if ((subtractInput % divisor) == 0)
-                            AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
-                        // Code to execute if subtractCanvas1 alpha is 0
-                    }
-
+                    userInput = userInput.Substring(0, userInput.Length - 1);
                 }
-                else if (additionNeeded)
+                else
                 {
-                    string additionString = inputText.text;
-
-                    //Check For immediate answer case
-                    if (additionString == answer.ToString())
-                    {
-                        sceneCompleteScript.SceneComplete = true;
-                        Button.image.color = Color.green;
-                    }
-
-                    if (additionString == correlatedAdditionInt.ToString())
-                    {
-                        string secondString;
-                        if (answerAdditionText.text != "")
-                            secondString = $"+{additionString}";
-                        else
-                            secondString = $"{additionString}";
-                        string firstString = answerAdditionText.text;
-
-                        answerAdditionText.text = firstString + secondString;
-                        additionNeeded = false;
-
-                        if (currentNumerator == 0)
-                        {
-                            finalAnswerNeeded = true;
-                            answerAdditionText.text = answerAdditionText.text + "=";
-                        }
-                        else
-                        {
-                            AdditionArrow.SetActive(false);
-                            // Set active appropriate arrow
-                            if (subtractCanvasFinal.alpha == 1f)
-                                ArrowFinal.SetActive(true);
-                            else if (subtractCanvas3.alpha == 1f)
-                                ArrowFinal.SetActive(true);
-                            else if (subtractCanvas2.alpha == 1f)
-                                Arrow3.SetActive(true);
-                            else if (subtractCanvas1.alpha == 1f)
-                                Arrow2.SetActive(true);
-                        }
-                    }
-                    else
-                    {
-                        //Number not valid, restart
-                        ResetScene();
-                    }
+                    userInput += Input.inputString;
                 }
+                inputText.text = userInput;
             }
-            else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
+        }
+    }
+    public void checkstringinput()
+    {
+        if (mobileVersion)
+        {
+            inputText.text = KeyboardInputText.text;//.ToString();
+            KeyboardInputText.text = "";
+        }
+
+        // Scene ALMOST complete circumstance
+        if (finalAnswerNeeded == true)
+        {
+            if (inputText.text == answer.ToString())
             {
-                userInput = userInput.Substring(0, userInput.Length - 1);
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
+
+            else
+            {
+                //Number not valid, restart
+                ResetScene();
+            }
+        }
+
+        // Subtraction Here
+        else if (!additionNeeded)
+        {
+            string subtractionString = inputText.text;
+
+            if (subtractCanvas1.alpha == 0f)
+            {
+                validateInput(subtractionString);
+                if ((subtractInput % divisor) == 0)
+                    AddSubtractNumber(subtractInput, subtractNum1, resultNum1, subtractCanvas1);
+            }
+            else if (subtractCanvas2.alpha == 0f)
+            {
+                validateInput(subtractionString);
+                if ((subtractInput % divisor) == 0)
+                    AddSubtractNumber(subtractInput, subtractNum2, resultNum2, subtractCanvas2);
+            }
+            else if (subtractCanvas3.alpha == 0f)
+            {
+                validateInput(subtractionString);
+                if ((subtractInput % divisor) == 0)
+                    AddSubtractNumber(subtractInput, subtractNum3, resultNum3, subtractCanvas3);
+            }
+            else if (subtractCanvasFinal.alpha == 0f)
+            {
+                validateInput(subtractionString);
+                if ((subtractInput % divisor) == 0)
+                    AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
+            }
+            
+            else
+            {
+                MoveNumbersUp();
+                validateInput(subtractionString);
+                if ((subtractInput % divisor) == 0)
+                    AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
+                // Code to execute if subtractCanvas1 alpha is 0
+            }
+        }
+        else if (additionNeeded)
+        {
+            string additionString = inputText.text;
+
+            //Check For immediate answer case
+            if (additionString == answer.ToString())
+            {
+                sceneCompleteScript.SceneComplete = true;
+                Button.image.color = Color.green;
+            }
+
+            if (additionString == correlatedAdditionInt.ToString())
+            {
+                string secondString;
+                if (answerAdditionText.text != "")
+                    secondString = $"+{additionString}";
+                else
+                    secondString = $"{additionString}";
+                string firstString = answerAdditionText.text;
+
+                answerAdditionText.text = firstString + secondString;
+                additionNeeded = false;
+
+                if (currentNumerator == 0)
+                {
+                    finalAnswerNeeded = true;
+                    answerAdditionText.text = answerAdditionText.text + "=";
+                }
+                else
+                {
+                    AdditionArrow.SetActive(false);
+                    // Set active appropriate arrow
+                    if (subtractCanvasFinal.alpha == 1f)
+                        ArrowFinal.SetActive(true);
+                    else if (subtractCanvas3.alpha == 1f)
+                        ArrowFinal.SetActive(true);
+                    else if (subtractCanvas2.alpha == 1f)
+                        Arrow3.SetActive(true);
+                    else if (subtractCanvas1.alpha == 1f)
+                        Arrow2.SetActive(true);
+                }
             }
             else
             {
-                userInput += Input.inputString;
+                //Number not valid, restart
+                ResetScene();
             }
-            inputText.text = userInput;
         }
     }
-
     public void activateInput()
     {
         isInputActive = true;
@@ -205,9 +213,7 @@ public class DivisionHandler : MonoBehaviour
         // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
         popUpCanvasGroup.alpha = 1f;
         popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-
-
-        // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
+        Button.image.color = Color.grey;
     }
 
     void validateInput(string input)
@@ -216,32 +222,23 @@ public class DivisionHandler : MonoBehaviour
         int input10x = 10 * subtractInput;
         int input100x = 100 * subtractInput;
 
-        if (input100x <= currentNumerator)
+        if (input100x <= currentNumerator && (input100x % divisor) == 0)
         {
-            if ((input100x % divisor) == 0)
-            {
-                subtractInput = input100x;
-                return;
-            }
+            subtractInput = input100x;
+            return;
         }
-        else if (input10x <= currentNumerator)
+        else if (input10x <= currentNumerator && (input10x % divisor) == 0)
         {
-            if ((input10x % divisor) == 0)
-            {
-                subtractInput = input10x;
-                return;
-            }
+            subtractInput = input10x;
+            return;
         }
-        else if (subtractInput <= currentNumerator)
+        else if (subtractInput <= currentNumerator && (subtractInput % divisor) == 0)
         {
-            if ((subtractInput % divisor) == 0)
-            {
-                return;
-            }
+            return;
         }
         else
         {
-            subtractInput = 1000;
+            subtractInput = 1009;
             //Number not valid, restart
             ResetScene();
         }

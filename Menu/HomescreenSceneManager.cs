@@ -4,27 +4,97 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine;
 using System.IO;
+using TMPro;
 
 public class HomescreenSceneManager : MonoBehaviour
 {
-    public GameObject menu;
     public GameObject loadingInterface;
     public Image progressBar;
 
     List<AsyncOperation> scenesToLoad = new List<AsyncOperation>();
 
-    public List<string> completedLevels;
     private string filePath;
+    public List<string> completedLevels;
+    public List<string> completedLevelTextList;
     public string completedLevelTextFilePath;
     public string currentLevel;
+    public TextMeshProUGUI MenuGradeText;
 
-    List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "NormalAddition", "NormalSubtraction", "MultiplicationV", "DivisionV", "LongMultiplication", "FractionIdentification", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
+    List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "MultiplicationV", "DivisionV", "NormalAddition", "NormalSubtraction", "LongMultiplication", "FractionFromShape", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
 
+    public SceneRatingsDisplay sceneRatingsDisplay;
 
-    private void Start()
+    public void Start()
     {
-        filePath = Path.Combine(Application.dataPath, completedLevelTextFilePath);
-        completedLevels = GetUniqueValuesFromFile();
+        //filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
+        //completedLevels = GetUniqueValuesFromFile();
+        
+        //currentLevel = "NumberCounting";
+
+        /*
+        if (completedLevels.Count > 0)
+        {
+            currentLevel = completedLevels[completedLevels.Count - 1];
+            int index = levelOrder.IndexOf(currentLevel);
+            currentLevel = levelOrder[index + 1];
+        }
+        */
+    }
+
+    List<string> GetStringListFromFile()
+    {
+        if (File.Exists(filePath))
+        {
+            return new List<string>(File.ReadAllLines(filePath));
+        }
+        return new List<string>();
+    }
+
+    public void DetermineMenuText()
+    {
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
+        List<string> completedLevelTextList = GetStringListFromFile();
+
+        /*
+        Debug.LogError("Completed Scenes:");
+        foreach (var scene in completedLevelTextList)
+        {
+            Debug.LogError(scene);
+        }
+        */
+
+
+        string gradeText = MenuGradeText.text;
+        // Check if the grade level text needs an update based on the length of the current text
+        if (gradeText.Length < 5)
+        {
+            // Determine grade level based on completed levels
+            if (completedLevelTextList.Contains("LongDivision"))
+            {
+                MenuGradeText.text = "Math Goat";
+            }
+            else if (completedLevelTextList.Contains("LongMultiplication"))
+            {
+                MenuGradeText.text = "4th";
+            }
+            else if (completedLevelTextList.Contains("MultiplicationV"))
+            {
+                MenuGradeText.text = "3rd";
+            }
+            else if (completedLevelTextList.Contains("SmallerOrBigger"))
+            {
+                MenuGradeText.text = "2nd";
+            }
+            else if (completedLevelTextList.Contains("BasicSubtractionV"))  // Fixed incorrect string check
+            {
+                MenuGradeText.text = "1st";
+            }
+        }
+    }
+
+    public void SetCurrentLevel(string level)
+    {
+        currentLevel = level;
     }
 
     List<string> GetUniqueValuesFromFile()
@@ -39,25 +109,17 @@ public class HomescreenSceneManager : MonoBehaviour
 
         return completedLevels;
     }
+
     public void StartFirstScene()
     {
-        HideMenu();
+        Debug.LogError(currentLevel);
         ShowLoadingBar();
-        if (completedLevels.Count == 0)
-            scenesToLoad.Add(SceneManager.LoadSceneAsync("NumberCounting"));
-        else
-        { 
-            currentLevel = completedLevels[completedLevels.Count - 1];
-            int index = levelOrder.IndexOf(currentLevel);
-            currentLevel = levelOrder[index + 1];
-
-            scenesToLoad.Add(SceneManager.LoadSceneAsync(currentLevel));
-        }
+        scenesToLoad.Add(SceneManager.LoadSceneAsync(currentLevel));
         StartCoroutine(LoadingScreen());
     }
-    public void speedLevelMenu()
+
+    public void LevelsMenu()
     {
-        HideMenu();
         ShowLoadingBar();
         scenesToLoad.Add(SceneManager.LoadSceneAsync("Speed"));
         StartCoroutine(LoadingScreen());
@@ -65,13 +127,9 @@ public class HomescreenSceneManager : MonoBehaviour
 
     public void StartAnyScene(string levelName)
     {
+        ShowLoadingBar();
         scenesToLoad.Add(SceneManager.LoadSceneAsync(levelName));
         StartCoroutine(LoadingScreen());
-    }
-
-    public void HideMenu()
-    {
-        menu.SetActive(false);
     }
 
     public void ShowLoadingBar()
@@ -81,6 +139,58 @@ public class HomescreenSceneManager : MonoBehaviour
 
     IEnumerator LoadingScreen()
     {
+        sceneRatingsDisplay.SetCanvasGroupAlpha1();
+
+        // Load the scenes asynchronously
+        for (int i = 0; i < scenesToLoad.Count; ++i)
+        {
+            scenesToLoad[i].allowSceneActivation = false;
+            yield return null;
+        }
+
+        // Wait for 4 seconds before activating the scenes
+        yield return StartCoroutine(FillProgressBarIn4Seconds());
+        //yield return new WaitForSeconds(4f);
+
+        // Activate the scenes
+        for (int i = 0; i < scenesToLoad.Count; ++i)
+        {
+            scenesToLoad[i].allowSceneActivation = true;
+        }
+    }
+
+    IEnumerator FillProgressBarIn4Seconds()
+    {
+        float startTime = Time.time;
+        float duration = 4f; // 4 seconds
+        float progressValue = 0f;
+
+        while (Time.time - startTime < duration)
+        {
+            progressValue = (Time.time - startTime) / duration;
+            progressBar.fillAmount = progressValue;
+            yield return null;
+        }
+
+        progressBar.fillAmount = 1f; // Ensure the progress bar is fully filled
+    }
+    /*
+
+        // Wait for the scenes to finish loading
+        float progressValue = 0;
+        for (int i = 0; i < scenesToLoad.Count; ++i)
+        {
+            while (!scenesToLoad[i].isDone)
+            {
+                progressValue += scenesToLoad[i].progress;
+                progressBar.fillAmount = progressValue / scenesToLoad.Count;
+                yield return null;
+            }
+        }
+    */
+    /*IEnumerator LoadingScreen()
+    {
+        sceneRatingsDisplay.SetCanvasGroupAlpha1();
         float progressValue = 0;
         for(int i=0; i<scenesToLoad.Count; ++i)
         {
@@ -91,18 +201,6 @@ public class HomescreenSceneManager : MonoBehaviour
                 yield return null;
             }
         }
-    }
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
-
-    List<string> GetStringListFromFile()
-    {
-        if (File.Exists(filePath))
-        {
-            return new List<string>(File.ReadAllLines(filePath));
-        }
-        return new List<string>();
-    }
+        yield return new WaitForSeconds(10f);
+    }*/
 }
