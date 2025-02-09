@@ -20,6 +20,9 @@ public class CircleGridGenerator1    : MonoBehaviour
     public static int circlesInCompleteRows;
     public static int remainingCircles;
 
+    public AnimationClip shakeAnimationClip;
+    private GameObject circleGroupAnimationParent;
+
     void Start()
     {
         totalNumberOfCircles = Random.Range(minRandomNumberOfCircles, maxRandomNumberOfCircles + 1);
@@ -33,7 +36,26 @@ public class CircleGridGenerator1    : MonoBehaviour
         int totalColumns = remainingCircles > 0 ? fullColumns + 1 : fullColumns;
 
         // Create a parent object to group the circles
+        circleGroupAnimationParent = new GameObject("circleGroupAnimationParent1");
+
+        // Create a parent object to group the circles
         circleGroup = new GameObject("CircleGroup1");
+        circleGroup.transform.SetParent(circleGroupAnimationParent.transform);
+        circleGroup.tag = "temporary";
+
+        Animation animation = circleGroupAnimationParent.AddComponent<Animation>();
+
+        if (shakeAnimationClip != null)
+        {
+            animation.clip = shakeAnimationClip;
+            animation.AddClip(animation.clip, "ShakeSmallCircle");
+            animation.Play("ShakeSmallCircle");
+            //Debug.LogError("Animation is playing: " + animation.isPlaying); 
+        }
+        else
+        {
+            Debug.LogError("Animation clip 'ShakeSmallCircle' not found or not assigned!");
+        }
 
         // Calculate the center position of the grid
         Vector3 centerPosition = new Vector3((totalColumns - 1) * circleSpacing / 2f, 0f, 0f);

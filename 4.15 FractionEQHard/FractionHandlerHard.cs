@@ -19,10 +19,9 @@ public class FractionHandlerHard : MonoBehaviour
     public TextMeshProUGUI keyboardDenominator;
 
     public AnswerManager415 answerManager;
+    public FractionMobileKeyboardController03 keyboardScript;
     public GameObject ansPanel1;
     public GameObject ansPanel2;
-    public GameObject keyPanel1;
-    public GameObject keyPanel2;
 
     void Start()
     {
@@ -42,10 +41,9 @@ public class FractionHandlerHard : MonoBehaviour
         {
             ansPanel1.SetActive(false);
             ansPanel2.SetActive(true);
-            keyPanel1.SetActive(false);
-            keyPanel2.SetActive(true);
             answerManager.secondInput = true;
             numerator1Text.text = numeratorAns.ToString();
+            keyboardScript.setCorrect_questionMark();
             keyboardNumerator.text = numeratorAns.ToString();
 
             denominator1Text.text = "x";
@@ -54,6 +52,7 @@ public class FractionHandlerHard : MonoBehaviour
         else
         {
             numerator1Text.text = "x";
+            keyboardScript.setCorrect_questionMark();
             denominator1Text.text = denominatorAns.ToString();
             keyboardDenominator.text = denominatorAns.ToString();
             answerManager.denominator.text = denominatorAns.ToString();

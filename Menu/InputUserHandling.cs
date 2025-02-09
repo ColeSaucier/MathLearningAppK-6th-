@@ -41,7 +41,9 @@ public class InputUserHandling : MonoBehaviour
 
     public TextMeshProUGUI MenuGradeText;
     public TextMeshProUGUI MenuUsername;
-    public HomescreenSceneManager homescreenSceneManager;
+
+    public List<string> completedLevelTextList;
+    public string completedLevelTextFilePath;
 
     private void Start()
     {
@@ -58,18 +60,56 @@ public class InputUserHandling : MonoBehaviour
         else
         {
             MenuGradeText.text = playerObject.menuText;
-            homescreenSceneManager.DetermineMenuText();
             playerObject.menuText = MenuGradeText.text;
             SavePlayerData();
             MenuUsername.text = $"Player/Username: {playerObject.user}";
+            //Debug.LogError($"Player/Username: {playerObject.user}");
             //THIS SETS GO BUTTON'S "CURRENT LEVEL"
             variableObject = new VariableData();
             LoadVariableData();
+            variableObject.user = playerObject.user;
             string currentScene = variableObject.currentScene;
+            SaveVariableData();
             //Debug.LogError(variableObject.currentScene);
             //Debug.LogError(currentScene);
-            homescreenSceneManager.SetCurrentLevel(currentScene);
+            
+            filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
+            List<string> completedLevelTextList = GetStringListFromFile();
+            string gradeText = MenuGradeText.text;
+            // Check if the grade level text needs an update based on the length of the current text
+            if (gradeText.Length < 5)
+            {
+                // Determine grade level based on completed levels
+                if (completedLevelTextList.Contains("LongDivision"))
+                {
+                    MenuGradeText.text = "Math Goat";
+                }
+                else if (completedLevelTextList.Contains("LongMultiplication"))
+                {
+                    MenuGradeText.text = "4th";
+                }
+                else if (completedLevelTextList.Contains("MultiplicationV"))
+                {
+                    MenuGradeText.text = "3rd";
+                }
+                else if (completedLevelTextList.Contains("SmallerOrBigger"))
+                {
+                    MenuGradeText.text = "2nd";
+                }
+                else if (completedLevelTextList.Contains("BasicSubtractionV"))  // Fixed incorrect string check
+                {
+                    MenuGradeText.text = "1st";
+                }
+            }
         }
+    }
+    List<string> GetStringListFromFile()
+    {
+        if (File.Exists(filePath))
+        {
+            return new List<string>(File.ReadAllLines(filePath));
+        }
+        return new List<string>();
     }
 
     public void ValidateFirstName()
@@ -93,8 +133,20 @@ public class InputUserHandling : MonoBehaviour
         // Check if age is a valid integer
         if (ageInputField.text != "")
         {
-            ageImageC.gameObject.SetActive(true);
-            ageImageX.gameObject.SetActive(false);
+            if (int.TryParse(ageInputField.text, out int parsedAge))
+            {
+                // Check if the parsed age is within a reasonable range, e.g., 0 to 120 years
+                if (parsedAge >= 0 && parsedAge <= 120) 
+                {
+                    ageImageC.gameObject.SetActive(true);
+                    ageImageX.gameObject.SetActive(false);
+                }
+                else
+                {
+                    ageImageX.gameObject.SetActive(true);
+                    ageImageC.gameObject.SetActive(false);
+                }
+            }
         }
         else
         {
@@ -174,6 +226,8 @@ public class InputUserHandling : MonoBehaviour
                 playerObject.user = haveUsernameInputField.text;
                 MenuGradeText.text = playerObject.menuText; //Default "math goat"
                 MenuUsername.text = $"Player/Username: {playerObject.user}";
+
+                SaveVariableData();
             }
             //case when player fills out new user form and already user not filled
             else if (IsInputValid() & usernameImageC.gameObject.activeSelf)
@@ -215,7 +269,6 @@ public class InputUserHandling : MonoBehaviour
                     playerObject.menuText = "Math Goat";
                     variableObject.currentScene = "NormalAddition";
                 }
-                homescreenSceneManager.currentLevel = variableObject.currentScene;
             }
 
             //saveData ####
@@ -249,6 +302,7 @@ public class InputUserHandling : MonoBehaviour
         string filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
         variableJsonString = File.ReadAllText(filePath);
         variableObject = JsonUtility.FromJson<VariableData>(variableJsonString);
+        Debug.LogError("variableJsonString - Load: " + variableJsonString);
     }
 
     private void SaveVariableData()
@@ -257,6 +311,7 @@ public class InputUserHandling : MonoBehaviour
         string filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
         variableJsonString = JsonUtility.ToJson(variableObject);
         File.WriteAllText(filePath, variableJsonString);
+        Debug.LogError("variableJsonString - Save: " + variableJsonString);
     }
 
     public async Task InsertUserAsync()
@@ -338,5 +393,9 @@ public class InputUserHandling : MonoBehaviour
         public bool timeEnabled;
         public bool timeEnabledNotPace;
         public bool leaderboardEnabled;
+        public string swipeRight;
+        public string swipeLeft;
+        public string swipeDown;
+        public string swipeUp;
     }
 }

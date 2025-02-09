@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.Collections;
 
 public class DivisionHandler : MonoBehaviour
 {
@@ -53,6 +54,9 @@ public class DivisionHandler : MonoBehaviour
     public Canvas mobileKeyboard;
     private bool mobileVersion = true;
     public TextMeshProUGUI KeyboardInputText;
+    
+    public Image PlusSignImage;
+    public Image MoveUpIndicator;
     void Start()
     {
         divisor = UnityEngine.Random.Range(2, 15);
@@ -113,7 +117,10 @@ public class DivisionHandler : MonoBehaviour
             else
             {
                 //Number not valid, restart
+                Handheld.Vibrate();
                 ResetScene();
+                Color32 shiftColor = new Color32(210, 0, 0, 50);
+                StartCoroutine(ShowColoredImage(shiftColor, 0.2f));
             }
         }
 
@@ -139,17 +146,16 @@ public class DivisionHandler : MonoBehaviour
                 validateInput(subtractionString);
                 if ((subtractInput % divisor) == 0)
                     AddSubtractNumber(subtractInput, subtractNum3, resultNum3, subtractCanvas3);
+                MoveNumbersUp();
             }
             else if (subtractCanvasFinal.alpha == 0f)
             {
                 validateInput(subtractionString);
                 if ((subtractInput % divisor) == 0)
                     AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
-            }
-            
+            } 
             else
             {
-                MoveNumbersUp();
                 validateInput(subtractionString);
                 if ((subtractInput % divisor) == 0)
                     AddSubtractNumber(subtractInput, subtractNumFinal, resultNumFinal, subtractCanvasFinal);
@@ -202,6 +208,8 @@ public class DivisionHandler : MonoBehaviour
             {
                 //Number not valid, restart
                 ResetScene();
+                Color32 shiftColor = new Color32(210, 0, 0, 50);
+                StartCoroutine(ShowColoredImage(shiftColor, 0.2f));
             }
         }
     }
@@ -241,6 +249,8 @@ public class DivisionHandler : MonoBehaviour
             subtractInput = 1009;
             //Number not valid, restart
             ResetScene();
+            Color32 shiftColor = new Color32(210, 0, 0, 50);
+            StartCoroutine(ShowColoredImage(shiftColor, 0.2f));
         }
     }
 
@@ -300,17 +310,59 @@ public class DivisionHandler : MonoBehaviour
         Arrow3.SetActive(false);
         Arrow2.SetActive(false);
         Arrow1.SetActive(true);
+        PlusSignImage.gameObject.SetActive(true);
+        MoveUpIndicator.gameObject.SetActive(false);
     }
 
     void MoveNumbersUp()
     {
-        resultNum3.text = resultNumFinal.text;
-        resultNum2.text = resultNum3.text;
+        subtractCanvas3.alpha = 0f;
+        MoveUpIndicator.gameObject.SetActive(true);
+        PlusSignImage.gameObject.SetActive(false);
         resultNum1.text = resultNum2.text;
+        resultNum2.text = resultNum3.text;
+        resultNum3.text = resultNumFinal.text;
         resultNumFinal.text = "";
-        subtractNum3.text = subtractNumFinal.text;
+        subtractNum1.text = "";
         subtractNum2.text = subtractNum3.text;
-        subtractNum1.text = subtractNum2.text;
+        subtractNum3.text = subtractNumFinal.text;
         subtractNumFinal.text = "";
+    }
+    // Method to start the coroutine that creates a colored image
+    public virtual void DisplayColoredImage(Color32 color, float duration)
+    {
+        StartCoroutine(ShowColoredImage(color, duration));
+    }
+
+    public Sprite background;
+    IEnumerator ShowColoredImage(Color32 color, float duration)
+    {
+        // Create Canvas
+        GameObject canvasObject = new GameObject("TemporaryCanvas");
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 15;
+
+        // Add a Panel (which is just an Image component with a default rect)
+        GameObject panel = new GameObject("ColoredPanel");
+        panel.transform.SetParent(canvas.transform, false);
+        Image panelImage = panel.AddComponent<Image>();
+        
+        // Load the "Background" sprite
+        Sprite backgroundSprite = background; // Assumes the sprite is in a Resources folder
+
+        // Set the sprite to the panel's Image component
+        panelImage.sprite = backgroundSprite;
+        panelImage.color = color;
+
+        // Position and size the panel (you might adjust these values)
+        RectTransform panelRectTransform = panel.GetComponent<RectTransform>();
+        panelRectTransform.sizeDelta = new Vector2(Screen.width, Screen.height); // Full screen size, adjust as needed
+
+        // Wait for the duration
+        yield return new WaitForSeconds(duration);
+
+        // Clean up
+        Destroy(canvasObject);
     }
 }

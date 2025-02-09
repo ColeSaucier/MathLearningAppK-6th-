@@ -28,6 +28,11 @@ public class LeaderboardManager : MonoBehaviour
     private VariableData variableObject;
     public string variablejsonFilePath;
     private string variableJsonString;
+
+    private PlayerData playerObject;
+    public string playerjsonFilePath;
+    private string playerJsonString;
+
     public SceneCompleteMenu sceneCompleteMenu_script;
     public string currentScene;
 
@@ -57,8 +62,14 @@ public class LeaderboardManager : MonoBehaviour
 
     public async Task SceneCompleteInsert()
     {
+        filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
+        variableJsonString = File.ReadAllText(filePath);
+        variableObject = JsonUtility.FromJson<VariableData>(variableJsonString);
+        
         // Get the current scene
         currentScene = sceneCompleteMenu_script.currentScene;
+
+        //Debug.LogError("variableObject.user, " + variableObject.user);
 
         // Insert activity set into the database
         await FormatActivity_SetInsert(variableObject.setId, variableObject.user, currentScene, sceneCompleteMenu_script.rounded_time);
@@ -88,7 +99,7 @@ public class LeaderboardManager : MonoBehaviour
             { "user_param", username }
         });
 
-        if (rankResponse != null)
+        if (rankResponse.Content.ToString() != null)
         {
             // Parse the rank from the response
             var rank = JsonConvert.DeserializeObject<int>(rankResponse.Content.ToString());
@@ -97,7 +108,7 @@ public class LeaderboardManager : MonoBehaviour
         else
         {
             // Handle error
-            Debug.LogError("Failed to retrieve user rank.");
+            //Debug.LogError("Failed to retrieve user rank.");
             return -1; // Return a default value or handle the error case accordingly
         }
     }
@@ -114,6 +125,7 @@ public class LeaderboardManager : MonoBehaviour
         });
 
         levelText.text = currentScene;
+        //Debug.LogError("Levelt tect: "+currentScene);
         // Check if response is successful and contains data
         if (baseResponse != null)
         {
@@ -309,6 +321,20 @@ public class LeaderboardManager : MonoBehaviour
         public int counterScene;
         public float timeElapsed;
         public int setId;
+    }
+    [Serializable]
+    public class PlayerData
+    {
+        public string user;
+        public string menuText;
+        public int gemTotal;
+        public bool timeEnabled;
+        public bool timeEnabledNotPace;
+        public bool leaderboardEnabled;
+        public string swipeRight;
+        public string swipeLeft;
+        public string swipeDown;
+        public string swipeUp;
     }
 }
 

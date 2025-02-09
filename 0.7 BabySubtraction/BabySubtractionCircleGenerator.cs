@@ -16,24 +16,53 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
     private bool isDragging;
     private Vector3 lastMousePosition;
     private Vector3 offset;
-    public GameObject parentObject;
+    public GameObject subparentObject2;
 
     public bool collided = false;
     public bool undoCombination;
 
     private bool isDragging2;
     public Vector3 initialSpawnPosition2 = new Vector3(1, 0, 0);
-    public GameObject parentObject2;
+    public GameObject subparentObject;
 
-    public Vector3 combinedSpawnPosition = new Vector3(0, 0, 0);
+    public Vector3 combinedSpawnPosition = new Vector3(0, 30, 0);
     public GameObject combinedObject;
+
+    public AnimationClip shakeAnimationClip;
+    public GameObject parentObject;
+    public GameObject parentObject2;
 
     void Start()
     {
-        // Create an empty parent object to hold the generated prefabs
-        parentObject = new GameObject("GeneratedPrefabs1");
+        //Animation parents
+        parentObject = new GameObject("parentObject");
         parentObject2 = new GameObject("GeneratedPrefabs2");
-        combinedObject = new GameObject("CombinedPrefabs");
+        
+        Animation animation = parentObject.AddComponent<Animation>();
+        Animation animation2 = parentObject2.AddComponent<Animation>();
+
+        if (shakeAnimationClip != null)
+        {
+            animation.clip = shakeAnimationClip;
+            animation.AddClip(animation.clip, "ShakeSmallCircle");
+            animation.Play("ShakeSmallCircle");
+            animation2.clip = shakeAnimationClip;
+            animation2.AddClip(animation.clip, "ShakeSmallCircle");
+            animation2.Play("ShakeSmallCircle");
+            //Debug.LogError("Animation is playing: " + animation.isPlaying); 
+        }
+        else
+        {
+            Debug.LogError("Animation clip 'ShakeSmallCircle' not found or not assigned!");
+        }
+
+
+        // Create an empty parent object to hold the generated prefabs
+        subparentObject = new GameObject("GeneratedPrefabs1");
+        subparentObject.transform.SetParent(parentObject.transform);
+        subparentObject2 = new GameObject("GeneratedPrefabs2");
+        subparentObject2.transform.SetParent(parentObject2.transform);
+        combinedObject = new GameObject("parentObject2");
 
         // Generate a random number of prefabs
         int numberOfObjects = Random.Range(minObjects, maxObjects + 1);
@@ -50,16 +79,16 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
             GameObject newPrefab = Instantiate(prefabToInstantiate, spawnPosition, Quaternion.identity);
 
             // Set the parent of the instantiated prefab to the parentObject
-            newPrefab.transform.parent = parentObject.transform;
+            newPrefab.transform.parent = subparentObject.transform;
         }
 
-        Vector3 firstCirclePosition = parentObject.transform.GetChild(0).transform.position;
+        Vector3 firstCirclePosition = subparentObject.transform.GetChild(0).transform.position;
         // Get the last child object's position
-        Vector3 lastCirclePosition = parentObject.transform.GetChild(numberOfObjects - 1).transform.position;
+        Vector3 lastCirclePosition = subparentObject.transform.GetChild(numberOfObjects - 1).transform.position;
         Vector3 delta2 = (lastCirclePosition - firstCirclePosition) / 2f;
 
         // Add a BoxCollider to the parent object and center it
-        BoxCollider collider = parentObject.AddComponent<BoxCollider>();
+        BoxCollider collider = subparentObject.AddComponent<BoxCollider>();
         collider.center = delta2 + firstCirclePosition;
         collider.size = new Vector3(0.5f, numberOfObjects * spacing, 1f);
 
@@ -72,16 +101,16 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
             GameObject newPrefab = Instantiate(subtractPrefabToInstantiate, spawnPosition, Quaternion.identity);
 
             // Set the parent of the instantiated prefab to the parentObject
-            newPrefab.transform.parent = parentObject2.transform;
+            newPrefab.transform.parent = subparentObject2.transform;
         }
 
-        firstCirclePosition = parentObject2.transform.GetChild(0).transform.position;
+        firstCirclePosition = subparentObject2.transform.GetChild(0).transform.position;
         // Get the last child object's position
-        lastCirclePosition = parentObject2.transform.GetChild(numberOfObjects2 - 1).transform.position;
+        lastCirclePosition = subparentObject2.transform.GetChild(numberOfObjects2 - 1).transform.position;
         delta2 = (lastCirclePosition - firstCirclePosition) / 2f;
 
         // Add a BoxCollider to the parent object and center it
-        collider = parentObject2.AddComponent<BoxCollider>();
+        collider = subparentObject2.AddComponent<BoxCollider>();
         collider.center = delta2 + firstCirclePosition;
         collider.size = new Vector3(0.5f, numberOfObjects2 * spacing, 1f);
 
@@ -143,17 +172,17 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit) && hit.collider == parentObject.GetComponent<BoxCollider>())
+            if (Physics.Raycast(ray, out hit) && hit.collider == subparentObject.GetComponent<BoxCollider>())
             {
                 isDragging = true;
                 lastMousePosition = GetWorldMousePosition();
-                offset = lastMousePosition - parentObject.transform.position;
+                offset = lastMousePosition - subparentObject.transform.position;
             }
-            if (Physics.Raycast(ray, out hit) && hit.collider == parentObject2.GetComponent<BoxCollider>())
+            if (Physics.Raycast(ray, out hit) && hit.collider == subparentObject2.GetComponent<BoxCollider>())
             {
                 isDragging2 = true;
                 lastMousePosition = GetWorldMousePosition();
-                offset = lastMousePosition - parentObject2.transform.position;
+                offset = lastMousePosition - subparentObject2.transform.position;
             }
             if (Physics.Raycast(ray, out hit) && hit.collider == combinedObject.GetComponent<BoxCollider>())
             {
@@ -165,17 +194,17 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
             isDragging = false;
             isDragging2 = false;
             // Check for overlap between circleGroup and circleGroup1 colliders
-            if (parentObject.GetComponent<BoxCollider>().bounds.Intersects(parentObject2.GetComponent<BoxCollider>().bounds))
+            if (subparentObject.GetComponent<BoxCollider>().bounds.Intersects(subparentObject2.GetComponent<BoxCollider>().bounds))
             {
-                parentObject.SetActive(false);
-                parentObject2.SetActive(false);
+                subparentObject.SetActive(false);
+                subparentObject2.SetActive(false);
                 combinedObject.SetActive(true);
             }
             if (undoCombination)
             {
                 undoCombination = false;
-                parentObject.SetActive(true);
-                parentObject2.SetActive(true);
+                subparentObject.SetActive(true);
+                subparentObject2.SetActive(true);
                 combinedObject.SetActive(false);
             }
         }
@@ -183,14 +212,14 @@ public class BabySubtractionCircleGenerator : MonoBehaviour
         {
             Vector3 currentMousePosition = GetWorldMousePosition();
             Vector3 targetPosition = currentMousePosition - offset;
-            parentObject.transform.position = targetPosition;
+            subparentObject.transform.position = targetPosition;
             lastMousePosition = currentMousePosition;
         }
         if (isDragging2)
         {
             Vector3 currentMousePosition = GetWorldMousePosition();
             Vector3 targetPosition = currentMousePosition - offset;
-            parentObject2.transform.position = targetPosition;
+            subparentObject2.transform.position = targetPosition;
             lastMousePosition = currentMousePosition;
         }
     }

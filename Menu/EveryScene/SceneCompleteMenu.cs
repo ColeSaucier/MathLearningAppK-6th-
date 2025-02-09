@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System.Reflection;
+using AssetKits.ParticleImage;
 
 public class SceneCompleteMenu : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class SceneCompleteMenu : MonoBehaviour
     public TextMeshProUGUI repCounter;
     public CanvasGroup sceneCanvasGroup;
     public CanvasGroup buttonCanvasGroup;
-    public string completionRating = "";
+    public int completionRating;
 
     public bool SceneComplete = false;
     public bool SceneWASCompleted = false;
@@ -41,6 +42,7 @@ public class SceneCompleteMenu : MonoBehaviour
     List<string> levelOrder = new List<string> {"NumberCounting", "NumberCountingScattered", "BasicAdditionV", "BasicSubtractionV", "ShapePatterns", "SmallerOrBigger", "PlaceValues", "Clock", "AdditionV", "AdditionFunctionBox", "SubtractionFunctionBox", "MultiplicationV", "DivisionV", "NormalAddition", "NormalSubtraction", "LongMultiplication", "FractionFromShape", "FractionEqualize", "FractionEqualizeHard", "LongDivision"};
     public string currentScene;// = text.gameObject.name;
 
+    //Pace time bar vars
     public GameObject barHolder;
     public Image beatScoreBar;
     public float repPaceTime;
@@ -48,6 +50,7 @@ public class SceneCompleteMenu : MonoBehaviour
     public float elapsedTime;
     public float elapsedTimeFinal;
 
+    //scene complete animations + leaderboard vars
     public GameObject improveAnimation1;
     public GameObject improveAnimation2;
     public GameObject correctAnimation;
@@ -55,10 +58,19 @@ public class SceneCompleteMenu : MonoBehaviour
     public float rounded_time;
     public bool leaderboardEnabled = true;
 
+    //Animations/transition vars
+    public SwipeHandler swipeHandler;
+    //int levelIndex;
+
+    public GameObject star1;
+    public GameObject star2;
+    public GameObject star3;
+
     // Start is called before the first frame update
     void Start()
     {
         sceneCanvasGroup.interactable = false;
+        //Testing_ImprovementBars(); DELETE
 
         //retrieve data and create dataObject
         sceneObject = new SceneData();
@@ -68,20 +80,57 @@ public class SceneCompleteMenu : MonoBehaviour
         variableObject = new VariableData();
         LoadVariableData();
 
+        //Check if Animation Scene needs to be loaded
+        CheckIfUiNeeded();
+        GameObject transitionAnimationsObject = GameObject.Find("TransitionAnimations");
+        if (transitionAnimationsObject != null)
+        {
+            swipeHandler = transitionAnimationsObject.GetComponent<SwipeHandler>();
+            if (swipeHandler == null)
+            {
+                Debug.LogError("Animator component not found");
+            }
+            else
+            {
+                //Debug.LogError("Animator component found");
+            }
+        }
+        else
+        {
+            Debug.LogError("transitionAnimationsObject not found.");
+        }
+
         //Updates repCounter, current scene, and starts counter
+        //Debug.LogError("REPS updated");
+        //Debug.LogError("sceneObject.numRepetitions: "+sceneObject.numRepetitions);
         repCounter.text = $"{variableObject.counterScene}/{sceneObject.numRepetitions}";
-        currentScene = SceneManager.GetActiveScene().name;
+        currentScene = SceneManager.GetSceneByBuildIndex(swipeHandler.levelIndex).name;
         variableObject.currentScene = currentScene;
         SaveVariableData();
 
         //Debug.LogError("sceneObject.bestTime: " + sceneObject.bestTime);
         
+        // Wait for 3 seconds for animation/starttime
+        bool enableOptionalWait = true;
+        if (enableOptionalWait && variableObject.counterScene == 0)
+        {
+            StartCoroutine(WaitThreeSeconds());
+        }
         //Vars for beatScoreBar
         startTime = Time.time;
         totalTimeToBeatScore = sceneObject.bestTime - variableObject.timeElapsed;
         repPaceTime = totalTimeToBeatScore / (sceneObject.numRepetitions - variableObject.counterScene);
+        // Start coroutine to check after 5 seconds
+        //StartCoroutine(CheckUISceneAfterDelay());
+        AssignImprovementWindowAttributes();
+    }
+    IEnumerator WaitThreeSeconds()
+    {
+        yield return new WaitForSeconds(2.99f);
+        // Code to be executed after the wait, if any, would go here
     }
 
+    private bool paceBarBool = true;
     // Update is called once per frame
     void Update()
     {
@@ -89,35 +138,80 @@ public class SceneCompleteMenu : MonoBehaviour
         {
             // Used in Data collector, to determine if scene was completed
             SceneWASCompleted = true;
-
             SceneComplete = false;
-            barHolder.SetActive(false);
-            sceneComplete();
+            paceBarBool = false;
+
+            elapsedTimeFinal = Time.time - startTime;
+            variableObject.timeElapsed += elapsedTimeFinal;//(int)
+            //Green shift for correct input
+            Color32 shiftColor = new Color32(42, 210, 0, 50);
+            StartCoroutine(ShowColoredImage(shiftColor, 0.2f));
         }
-        else
+        else if (paceBarBool)
         {
             // checks if variable 
             elapsedTime = Time.time - startTime;
             // beatScoreBar Updating
             if (elapsedTime > totalTimeToBeatScore)
-                {
-                beatScoreBar.color = Color.red;
+            {
+                beatScoreBar.color = new Color32(210, 0, 0, 255);
                 beatScoreBar.fillAmount = (float)(0.1);
-                }
+            }
             else if (elapsedTime > repPaceTime)
+            {
                beatScoreBar.color = Color.yellow;
+            }
             else
+            {
+                //Debug.LogError((string)(0.1 + 0.9 * ((repPaceTime - elapsedTime) / repPaceTime)));
                 beatScoreBar.fillAmount = (float)(0.1 + 0.9 * ((repPaceTime - elapsedTime) / repPaceTime));
+            }
         }
-
     }
+    // Method to start the coroutine that creates a colored image
+    public void DisplayColoredImage(Color32 color, float duration)
+    {
+        StartCoroutine(ShowColoredImage(color, duration));
+    }
+
+    public Sprite background;
+    IEnumerator ShowColoredImage(Color32 color, float duration)
+    {
+        // Create Canvas
+        GameObject canvasObject = new GameObject("TemporaryCanvas");
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 15;
+
+        // Add a Panel (which is just an Image component with a default rect)
+        GameObject panel = new GameObject("ColoredPanel");
+        panel.transform.SetParent(canvas.transform, false);
+        Image panelImage = panel.AddComponent<Image>();
+        
+        // Load the "Background" sprite
+        Sprite backgroundSprite = background; // Assumes the sprite is in a Resources folder
+
+        // Set the sprite to the panel's Image component
+        panelImage.sprite = backgroundSprite;
+        panelImage.color = color;
+
+        // Position and size the panel (you might adjust these values)
+        RectTransform panelRectTransform = panel.GetComponent<RectTransform>();
+        panelRectTransform.sizeDelta = new Vector2(Screen.width, Screen.height); // Full screen size, adjust as needed
+
+        // Wait for the duration
+        yield return new WaitForSeconds(duration);
+        sceneComplete();
+
+        // Clean up
+        Destroy(canvasObject);
+    }
+
 
     void sceneComplete()
     {
         //Record the duration of one scene repetition, cumalatively into variableObject
         //Raise rep counter
-        elapsedTimeFinal = Time.time - startTime;
-        variableObject.timeElapsed += elapsedTimeFinal;//(int)
         //variableObject.counterScene = 0;
         variableObject.counterScene++;
         repCounter.text = $"{variableObject.counterScene}/{sceneObject.numRepetitions}";
@@ -127,8 +221,7 @@ public class SceneCompleteMenu : MonoBehaviour
         {
             //saveData
             SaveVariableData();
-            string thisScene = SceneManager.GetActiveScene().name;
-            SceneManager.LoadScene(thisScene);
+            swipeHandler.triggerTransitionByUpdate = 0;
         }
         if (variableObject.counterScene == sceneObject.numRepetitions)
         {
@@ -136,49 +229,73 @@ public class SceneCompleteMenu : MonoBehaviour
         }
     }
 
+    private Color32 ratingColor;
     async void RepsCompleted()
     {
         float current_time = variableObject.timeElapsed;
         rounded_time = (float)Math.Round(current_time, 2);
-       
+
         // Record time in scene json
         if (current_time < sceneObject.bestTime)
         {
             sceneObject.bestTime = current_time;
-            timeText.color = Color.blue;
+            ImprovementWindowBool = true;
+            //timeText.color = new Color32(135, 206, 235, 255); // Light Blue oorr new Color32(0, 0, 128, 255)
+
             improveAnimation1.SetActive(true);
             improveAnimation2.SetActive(true);
-        } 
+        }
         else
+        {
             correctAnimation.SetActive(true);
+        }
+
 
         // Determine Rating (+record it)
-        completionRating = "Standard";
+        completionRating = 1;
+        star1.SetActive(true);
+        Improvstar1.SetActive(true);
         if (sceneObject.bestTime <= sceneObject.goldTime)
         {
-            completionRating = "Epic";
-            ratingText.color = new Color32(255, 165, 0, 255); // Orange
+            star2.SetActive(true);
+            Improvstar2.SetActive(true);
+            completionRating = 2;
+            //ratingText.color = new Color32(255, 165, 0, 255); // Orange
+            ratingColor = new Color32(255, 165, 0, 255);
+
         }
-        if (sceneObject.bestTime <= sceneObject.perfTime)
+        else if (sceneObject.bestTime <= sceneObject.perfTime)
         {
-            completionRating = "Legendary";
-            ratingText.color = new Color32(128, 0, 128, 255); // Purple
+            Improvstar2.SetActive(true);
+            Improvstar3.SetActive(true);
+            star2.SetActive(true);
+            star3.SetActive(true);
+            completionRating = 3;
+            //ratingText.color = new Color32(128, 0, 128, 255); // Purple
+            ratingColor = new Color32(128, 0, 128, 255);
+        }
+        else
+        {
+            ratingColor = new Color32(210, 0, 0, 255);
         }
 
         UpdateValue_AllSceneRatings(currentScene, completionRating);
 
-        //Assigns repetitions menu complete variables
-        sceneObject.bestRating = completionRating;
-        ratingText.text = completionRating; 
-        float minutes = variableObject.timeElapsed / 60; //sceneObject.bestTime
+        //Assigns scene complete menu variables. This is the Set time.
+        sceneObject.bestRating = completionRating.ToString();
+        //ratingText.text = completionRating; 
+        float minutes = variableObject.timeElapsed / 60;
         float seconds = variableObject.timeElapsed % 60;
         string timeString = $"{(int)minutes}min:{Math.Round(seconds, 2)}sec";
         timeText.text = timeString;
 
+        //This is the Best time.
         minutes = sceneObject.bestTime / 60; //sceneObject.bestTime
         seconds = sceneObject.bestTime % 60;
         timeString = $"{(int)minutes}:{Math.Round(seconds, 2)}";
         besttimeText.text = timeString;
+
+        AssignImprovementWindowAttributes();
 
         //Reset variableObject
         variableObject.counterScene = 0;
@@ -211,30 +328,42 @@ public class SceneCompleteMenu : MonoBehaviour
             leaderboardScript.leaderboard.gameObject.SetActive(false);
         }
     }
-
     public void RestartScene()
     {
         //Reset variableObject
         variableObject.counterScene = 0;
         variableObject.timeElapsed = 0;
         SaveVariableData();
-
-        string thisScene = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(thisScene);
+        swipeHandler.triggerTransitionByUpdate = 0;
     }
     public void GoToMenu()
     {
         variableObject = new VariableData();
         LoadVariableData();
         //Reset variableObject
+        ResetVariableData();
+        SceneManager.LoadScene("Menu");
+    }
+    public void GoToLevelSelect()
+    {
+        //Reset variableObject
         variableObject.counterScene = 0;
         variableObject.timeElapsed = 0;
+        variableObject.currentScene = SceneManager.GetActiveScene().name;
         SaveVariableData();
-        SceneManager.LoadScene("Menu");
+        swipeHandler.triggerTransitionByUpdate_SceneName = "speed";
+    }
+
+    public void BeginPreviousScene()
+    {
+        ResetVariableData();
+        swipeHandler.triggerTransitionByUpdate = -1;
+        //StartCoroutine(swipeHandler.LoadLevel_SceneComplete(-1));
     }
 
     public void BeginNextScene()
     {
+        /*
         if (MixIt.mixBool)
         {
             //Same as MixIt.StartRandomMixLevel() (In home screen)
@@ -258,22 +387,64 @@ public class SceneCompleteMenu : MonoBehaviour
         }
         else
         {
-            //determine next scene
-            string thisScene = SceneManager.GetActiveScene().name;
-            int index = levelOrder.IndexOf(thisScene);
-            string nextScene = null;
-
-            // Check if the string was found and has a next element
-            if (index != -1 && index < levelOrder.Count - 1)
-            {
-                // Get the next string in the list
-                nextScene = levelOrder[index + 1];
-            }
-
-            SceneManager.LoadScene(nextScene);
+            */
+        //Update
+        ResetVariableData();
+        swipeHandler.triggerTransitionByUpdate = 1;
+        /*
+        filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
+        List<string> completedLevelTextList = GetStringListFromFile();
+        foreach (string level in completedLevelTextList)
+        {
+            Debug.LogError(level);
         }
-    }
+        string thisScene = SceneManager.GetActiveScene().name;
+        Debug.LogError(thisScene);
+        int index = levelOrder.IndexOf(thisScene);
+        string nextScene = null;
 
+        // Check if the string was found and has a next element
+        if (index != -1 && index < levelOrder.Count - 1)
+        {
+            // Get the next string in the list
+            nextScene = levelOrder[index + 1];
+        }
+        // IF PLAYER HAS COMPLETED the scene
+        if (completedLevelTextList.Contains(thisScene) || thisScene == "NumberCounting")
+        {
+            // If player has completed the current scene, load the next scene
+            ResetVariableData();
+            StartCoroutine(LoadLevel(nextScene));
+        }
+        else
+        {
+            Debug.LogError("Scene not completed");
+            // If player has not completed the scene, trigger animation
+            // Else player has to complete this level
+
+            //SceneManager.LoadScene(nextScene);
+        }
+        */
+    }
+    void ResetVariableData()
+    {
+        variableObject.counterScene = 0;
+        variableObject.timeElapsed = 0;
+        SaveVariableData();
+    }
+    /*
+    IEnumerator LoadLevel(string levelIndex)
+    {
+        //play animation
+        transition.SetTrigger("Start");
+
+        //wait
+        yield return new WaitForSeconds(0.1f);
+
+        //load scene
+        SceneManager.LoadScene(levelIndex);
+    }
+    */
     void AddCompletedScene(string sceneName)
     {
         //Adds the scene name to .txt list, after reps completed
@@ -321,6 +492,247 @@ public class SceneCompleteMenu : MonoBehaviour
         }
     }
 
+    void CheckIfUiNeeded()
+    {
+        int sceneCount = SceneManager.sceneCount;
+
+        // Check if there's only one scene loaded
+        if (sceneCount == 1)
+        {
+            // Load the scene at build index 1 additively, THIS IS MENU
+            SceneManager.LoadSceneAsync(0, LoadSceneMode.Additive);
+            StartCoroutine(StartUp_UI(0));
+        }
+        else
+        {
+        }
+        //Debug.LogError($"{SceneManager.GetActiveScene().name} is the current active scene.");
+    }
+    IEnumerator StartUp_UI(int levelIndex)
+    {
+        Scene newScene = SceneManager.GetSceneByBuildIndex(0);
+        while (!newScene.isLoaded)
+        {
+            // If the scene is not loaded, wait for it or handle this situation appropriately
+            yield return null; // Wait for the load operation if you're not already doing so
+        }
+    }
+
+    //PopUp Improvement Window Vars
+    public GameObject ImprovementWindow;
+    public GameObject Improvstar1;
+    public GameObject Improvstar2;
+    public GameObject Improvstar3;
+    public TextMeshProUGUI ImprovBestTime;
+    public TextMeshProUGUI ImprovPrevTime;
+    public TextMeshProUGUI ImprovPrevTime_StaticHeader;
+    public TextMeshProUGUI ImprovPercentage;
+    public TextMeshProUGUI ImprovBonusGoldText;
+    private float PrevTime; //For storage to calculate percentage now
+    public PlayerPreferenceManagement playerData_script; //Used to collect gold
+    //public ParticleImage coinsssssss;
+    private bool ImprovementWindowBool = false;
+    public BoxCollider ImprovamentWindowcollider;
+
+    private Color32 ratingColorPrevious;
+    private int previousRatingInteger;
+
+    //Star Highlights (on improvement of rating)
+    public GameObject starHighlight1;
+    public GameObject starHighlight2;
+    public GameObject starHighlight3;
+
+
+    void AssignImprovementWindowAttributes()
+    {
+        //PopUp Improvement Window Vars
+        //Logic for before scene ever completed and getting variables 
+        //Then executing the image post completeion ELSE
+        if (!SceneWASCompleted)
+        {
+            //storage for calc later
+            PrevTime = sceneObject.bestTime;
+            float minutes = sceneObject.bestTime / 60; //sceneObject.bestTime
+            float seconds = sceneObject.bestTime % 60;
+            if ((int)minutes == 0)
+                ImprovPrevTime.text = $"{Math.Round(seconds, 2)}sec";
+            else
+                ImprovPrevTime.text = $"{(int)minutes}min {Math.Round(seconds, 2)}sec";
+
+            if (minutes != 10)
+            {
+                ratingColorPrevious = new Color32(210, 0, 0, 255);
+                previousRatingInteger = 1;
+            }
+            else if (PrevTime <= sceneObject.goldTime)
+            {
+                ratingColorPrevious = new Color32(255, 165, 0, 255);
+                previousRatingInteger = 2;
+            }
+            else if (PrevTime <= sceneObject.perfTime)
+            {
+                ratingColorPrevious = new Color32(128, 0, 128, 255);
+                previousRatingInteger = 3;
+            }
+            else
+            {
+                ratingColorPrevious = new Color32(210, 0, 0, 255);
+                previousRatingInteger = 0;
+                ImprovPrevTime.text = "n/a";
+                //ImprovPrevTime.color = new Color(ImprovPrevTime.color.r, ImprovPrevTime.color.g, ImprovPrevTime.color.b, 0);
+                //ImprovPrevTime_StaticHeader.color = new Color(ImprovPrevTime_StaticHeader.color.r, ImprovPrevTime_StaticHeader.color.g, ImprovPrevTime_StaticHeader.color.b, 0);
+            }
+        }
+        else
+        {
+            if (ImprovementWindowBool)
+            {
+                //Calculate and set displayed improvement texts and improvement bars
+                float PercentageImprovement = (PrevTime - sceneObject.bestTime) / PrevTime * 100;
+
+                float minutes = sceneObject.bestTime / 60; //sceneObject.bestTime
+                float seconds = sceneObject.bestTime % 60;
+                if ((int)minutes == 0)
+                    ImprovBestTime.text = $"{Math.Round(seconds, 2)}sec";
+                else
+                    ImprovBestTime.text = $"{(int)minutes}min {Math.Round(seconds, 2)}sec";
+                ImprovBestTime.color = ratingColor;
+                toggle_ImprovementWindow();
+
+                Debug.LogError("previousRatingInteger: "+ previousRatingInteger +"completionRating: "+ completionRating);
+
+                //ImprovPercentage.text = $"Improvement: {Math.Round(PercentageImprovement, 2)}%";
+                
+                //float ImprovBonusGold = PercentageImprovement * 10;
+                
+                ////////// Show the bonus gold animation
+                //ImprovBonusGoldText.text = $"Bonus Gold: {(int)ImprovBonusGold}";
+                //coinsssssss.rateOverLifetime = 20;
+                //coinsssssss.Play();
+                //playerDataJson.gemTotal += ImprovBonusGold;
+                Generate_improvementBars(improvementPercentage: PercentageImprovement);
+
+                //Determine if rating has improved, to enable highlight in improvement window
+                if (previousRatingInteger != completionRating)
+                {
+                    // Activate stars from the previous rating up to the new rating
+                    for (int i = previousRatingInteger + 1; i <= completionRating; i++)
+                    {
+                        switch (i)
+                        {
+                            case 1:
+                                starHighlight1.SetActive(true);
+                                break;
+                            case 2:
+                                starHighlight2.SetActive(true);
+                                break;
+                            case 3:
+                                starHighlight3.SetActive(true);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public void toggle_ImprovementWindow()
+    {
+        if (ImprovementWindow.activeSelf == true)
+        {
+            ImprovementWindow.SetActive(false);
+        }
+        else
+        {
+            ImprovementWindow.SetActive(true);
+        }
+
+    }
+
+    void Testing_ImprovementBars()
+    {
+        sceneCanvasGroup.alpha = 1f;
+        sceneCanvasGroup.interactable = true;
+        buttonCanvasGroup.blocksRaycasts = true;
+        
+        ImprovementWindow.SetActive(true);
+
+        //ImprovPercentage.text = $"Improvement: 15%";
+        //float ImprovBonusGold = 10;
+        //ImprovBonusGoldText.text = $"Bonus Gold: {(int)ImprovBonusGold}";
+        //coinsssssss.rateOverLifetime = 20;
+        //coinsssssss.Play();
+        //playerDataJson.gemTotal += ImprovBonusGold;
+        Generate_improvementBars(improvementPercentage: 15);
+    }
+
+    //Generate GameObjects
+    public GameObject parentOfImprovementBars; // Assign this in the Unity Inspector or script
+    private float variableHeight = 500f; // You can adjust this value
+    private float width = 30f; // Static width for the example
+    public Sprite BarsImprovementThing; // Assign a sprite in the inspector or script
+    private Vector2 offset = new Vector2(314f, 403f); // Offset from center
+    private float xOffset = 115;
+    //private 
+
+    void Generate_improvementBars(float improvementPercentage)
+    {
+        float improvement = 1 - (improvementPercentage / 100);
+
+        Debug.LogError($"improvement {improvement}");
+        // Create the image GameObject
+        GameObject newImageObject = new GameObject("Improvement Bar Reference");
+        
+        // Add Image component
+        Image imageComponent = newImageObject.AddComponent<Image>();
+        imageComponent.sprite = BarsImprovementThing; // Assign the sprite
+        imageComponent.color = ratingColorPrevious;
+
+        // Set the rect transform for the image
+        RectTransform rectTransform = newImageObject.GetComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(variableHeight, width); // Set the size
+        rectTransform.anchorMin = new Vector2(0.5f, 0f); // Center the image in the canvas
+        rectTransform.anchorMax = new Vector2(0.5f, 0f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.localEulerAngles = new Vector3(0, 0, 90); // Rotate 90 degrees around Z-axis
+        
+        // Make sure the image respects the canvas's scale
+        rectTransform.localScale = Vector3.one;
+
+        // Set the parent of the new image object
+        newImageObject.transform.SetParent(parentOfImprovementBars.transform, false);
+
+        // Position the image within the parent canvas with an offset
+        rectTransform.anchoredPosition = offset; // Apply the offset
+
+        // Create the image GameObject
+        GameObject diffImageObject = new GameObject("Improvement Bar ");
+        
+        // Add Image component
+        imageComponent = diffImageObject.AddComponent<Image>();
+        imageComponent.sprite = BarsImprovementThing; // Assign the sprite
+        imageComponent.color = ratingColor;
+        
+        // Set the rect transform for the image
+        rectTransform = diffImageObject.GetComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(variableHeight * improvement, width); // Set the size
+        rectTransform.anchorMin = new Vector2(0.5f, 0f); // Center the image in the canvas
+        rectTransform.anchorMax = new Vector2(0.5f, 0f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.localEulerAngles = new Vector3(0, 0, 90); // Rotate 90 degrees around Z-axis
+        
+        // Make sure the image respects the canvas's scale
+        rectTransform.localScale = Vector3.one;
+
+        // Set the parent of the new image object
+        diffImageObject.transform.SetParent(parentOfImprovementBars.transform, false);
+
+        // Position the image within the parent canvas with an offset
+        float yAdjustmentForFloor = (variableHeight - (variableHeight * improvement))/2;
+        rectTransform.anchoredPosition = offset + new Vector2(xOffset, 0f - yAdjustmentForFloor);
+
+        //adjust for height
+
+    }
 
     [Serializable]
     public class SceneData
@@ -344,7 +756,6 @@ public class SceneCompleteMenu : MonoBehaviour
         File.WriteAllText(filePath, sceneJsonString);
     }
 
-
     [Serializable]
     public class VariableData
     {
@@ -359,12 +770,14 @@ public class SceneCompleteMenu : MonoBehaviour
         filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
         variableJsonString = File.ReadAllText(filePath);
         variableObject = JsonUtility.FromJson<VariableData>(variableJsonString);
+        Debug.LogError("Load - variableJsonString: " + variableJsonString);
     }
     public void SaveVariableData()
     {
         filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
         string variableJsonString = JsonUtility.ToJson(variableObject);
         File.WriteAllText(filePath, variableJsonString);
+        Debug.LogError("Saving - variableJsonString: " + variableJsonString);
     }
 
     [Serializable]
@@ -393,16 +806,8 @@ public class SceneCompleteMenu : MonoBehaviour
     }
     
     //For AllSceneRatingsData
-    void UpdateValue_AllSceneRatings(string key, string rating)
+    void UpdateValue_AllSceneRatings(string key, int rating)
     {
-        // Convert rating to number
-        string valueRating;
-        valueRating = "1";
-        if (rating == "Epic")
-            valueRating = "2";
-        if (rating == "Legendary")
-            valueRating = "3";
-
         //retrieve data and create dataObject
         allSceneRatingObject = new AllSceneRatingsData();
         filePath = Path.Combine(Application.persistentDataPath, allSceneRatingsjsonFilePath); // Combine with the Assets folder
@@ -433,7 +838,7 @@ public class SceneCompleteMenu : MonoBehaviour
             { "LongDivision", allSceneRatingObject.LongDivision}
         };
 
-        allSceneRatingDictionary[key] = valueRating;
+        allSceneRatingDictionary[key] = rating.ToString();
         ConvertDictionaryToJson__SaveIt(allSceneRatingDictionary);
     }
 

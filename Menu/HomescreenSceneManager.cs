@@ -26,19 +26,7 @@ public class HomescreenSceneManager : MonoBehaviour
 
     public void Start()
     {
-        //filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
-        //completedLevels = GetUniqueValuesFromFile();
         
-        //currentLevel = "NumberCounting";
-
-        /*
-        if (completedLevels.Count > 0)
-        {
-            currentLevel = completedLevels[completedLevels.Count - 1];
-            int index = levelOrder.IndexOf(currentLevel);
-            currentLevel = levelOrder[index + 1];
-        }
-        */
     }
 
     List<string> GetStringListFromFile()
@@ -112,7 +100,7 @@ public class HomescreenSceneManager : MonoBehaviour
 
     public void StartFirstScene()
     {
-        Debug.LogError(currentLevel);
+        //Debug.LogError(currentLevel);
         ShowLoadingBar();
         scenesToLoad.Add(SceneManager.LoadSceneAsync(currentLevel));
         StartCoroutine(LoadingScreen());

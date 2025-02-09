@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class LoadDefaultPersistents : MonoBehaviour
 {
     public SupabaseReset SupabaseReset_script;
+    public CanvasGroup resetMenu;
 
     void Start()
     {
@@ -24,7 +25,7 @@ public class LoadDefaultPersistents : MonoBehaviour
             WriteJsonFile(persistentDataPath, "VariableData.json", variableDataJson);
 
             // Create PlayerData JSON file
-            string playerDataJson = "{\"user\":\"null\",\"menuText\":\"Math Goat!\",\"gemTotal\":0,\"timeEnabled\":true,\"timeEnabledNotPace\":true,\"leaderboardEnabled\":true}";
+            string playerDataJson = "{\"user\":\"null\",\"menuText\":\"Goat!\",\"gemTotal\":0,\"timeEnabled\":true,\"timeEnabledNotPace\":true,\"leaderboardEnabled\":true,\"swipeRight\":\"Level Selector\",\"swipeLeft\":\"Reload Level\",\"swipeUp\":\"Next Level\",\"swipeDown\":\"Previous Level\"}";
             WriteJsonFile(persistentDataPath, "PlayerData.json", playerDataJson);
 
             string NumberCountingJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":4.5,\"perfTime\":4,\"numRepetitions\":5}";
@@ -41,7 +42,7 @@ public class LoadDefaultPersistents : MonoBehaviour
             WriteJsonFile(persistentDataPath, "SmallerOrBigger.json", SmallerOrBiggerJson);
             string PlaceValuesJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":23,\"perfTime\":17,\"numRepetitions\":4}";
             WriteJsonFile(persistentDataPath, "PlaceValues.json", PlaceValuesJson);
-            string ClockJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":32,\"perfTime\":24,\"numRepetitions\":5}";
+            string ClockJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":25.6,\"perfTime\":19.2,\"numRepetitions\":4}";
             WriteJsonFile(persistentDataPath, "Clock.json", ClockJson);
             string AdditionVJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":12,\"perfTime\":10,\"numRepetitions\":5}";
             WriteJsonFile(persistentDataPath, "AdditionV.json", AdditionVJson);
@@ -68,7 +69,7 @@ public class LoadDefaultPersistents : MonoBehaviour
             string LongDivisionJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":54,\"perfTime\":48,\"numRepetitions\":4}";
             WriteJsonFile(persistentDataPath, "LongDivision.json", LongDivisionJson);
             
-            Debug.Log("Files Created");
+            Debug.LogError("Files Created");
         }
 
         int i = 0;
@@ -95,7 +96,21 @@ public class LoadDefaultPersistents : MonoBehaviour
         string filePath = Application.persistentDataPath + "/CompletedLevel.txt";
         if (File.Exists(filePath))
         {
+            Debug.LogError("files deleted");
             File.Delete(filePath);
+        }
+    }
+    public void ToggleMenu()
+    {
+        if (resetMenu.alpha == 0)
+        {
+            resetMenu.alpha = 1;
+            resetMenu.interactable = true;
+        }
+        else
+        {
+            resetMenu.alpha = 0;
+            resetMenu.interactable = false;
         }
     }
 
@@ -131,11 +146,11 @@ public class LoadDefaultPersistents : MonoBehaviour
         WriteJsonFile(persistentDataPath, "AllSceneRatingsData.json", allSceneRatingsDataJson);
 
         // Create VariableData JSON file
-        string variableDataJson = "{\"user\":\"Cole\",\"currentScene\":\"NumberCounting\",\"setId\":0,\"counterScene\":0,\"timeElapsed\":0}";
+        string variableDataJson = "{\"user\":\"null\",\"currentScene\":\"NumberCounting\",\"setId\":0,\"counterScene\":0,\"timeElapsed\":0}";
         WriteJsonFile(persistentDataPath, "VariableData.json", variableDataJson);
 
         // Create PlayerData JSON file
-        string playerDataJson = "{\"user\":\"Cole\",\"menuText\":\"Math Goat!\",\"gemTotal\":0,\"timeEnabled\":true,\"timeEnabledNotPace\":true,\"leaderboardEnabled\":True}";
+        string playerDataJson = "{\"user\":\"null\",\"menuText\":\"Math Goat!\",\"gemTotal\":0,\"timeEnabled\":true,\"timeEnabledNotPace\":true,\"leaderboardEnabled\":true,\"swipeRight\":\"Level Selector\",\"swipeLeft\":\"Re-load Level\",\"swipeUp\":\"Next Level\",\"swipeDown\":\"Previous Level\"}"; // {"Re-load Level", 0},{"Next Level", 1},{"Previous Level", -1}, {"Level Selector", 11}
         WriteJsonFile(persistentDataPath, "PlayerData.json", playerDataJson);
 
         string NumberCountingJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":4.5,\"perfTime\":4,\"numRepetitions\":5}";
@@ -178,6 +193,8 @@ public class LoadDefaultPersistents : MonoBehaviour
         WriteJsonFile(persistentDataPath, "FractionEqualizeHard.json", FractionEqualizeHardJson);
         string LongDivisionJson = "{\"bestTime\":600,\"bestRating\":\"\",\"goldTime\":54,\"perfTime\":48,\"numRepetitions\":4}";
         WriteJsonFile(persistentDataPath, "LongDivision.json", LongDivisionJson);
+        
+        Debug.LogError("Files Created");
     }
 
     [Serializable]

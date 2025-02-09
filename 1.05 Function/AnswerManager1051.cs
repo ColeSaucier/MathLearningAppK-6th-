@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class AnswerManager1051 : MonoBehaviour
+public class AnswerManager1051 : AnswerManagerBase
 {
     public int rule;
     public int firstNumber;
@@ -25,26 +25,12 @@ public class AnswerManager1051 : MonoBehaviour
     public TextMeshProUGUI fourthAnswerT;
 
     public int problemCurrent = 0;
-    public string answerString;
-    public bool SceneComplete;
-    public SceneCompleteMenu sceneCompleteScript;
-
-    // References needed for answer button
-    public Button Button;
-    public string userInput = "";
-    private bool isInputActive = false;
-    public TextMeshProUGUI inputText;
-    public CanvasGroup popUpCanvasGroup;
 
     public GameObject Step1;
     public GameObject Step2;
     public GameObject Step3;
     public GameObject Step4;
 
-    //Mobile Keyboard Enabling
-    public Canvas mobileKeyboard;
-    private bool mobileVersion = true;
-    public TextMeshProUGUI KeyboardInputText;
 
     void Start()
     {
@@ -122,33 +108,8 @@ public class AnswerManager1051 : MonoBehaviour
             fourthAnswerT.text = answerString;
     }
 
-    public void Update()
-    {
-        if (isInputActive)
-        {
-            // Real Keyboard Usage
-            if (mobileVersion != true)
-            {
-                // Check for input and handle it
-                if (Input.GetKeyDown(KeyCode.Return))
-                {
-                    checkStringInput();
-                    isInputActive = false;
-                }
-                else if (Input.GetKeyDown(KeyCode.Backspace) && userInput.Length > 0)
-                {
-                    userInput = userInput.Substring(0, userInput.Length - 1);
-                }
-                else
-                {
-                    userInput += Input.inputString;
-                }
-                inputText.text = userInput;
-            }
-        }
-    }
 
-    public void checkStringInput()
+    public override void checkStringInput()
     {
         if (mobileVersion)
         {
@@ -163,6 +124,12 @@ public class AnswerManager1051 : MonoBehaviour
                     sceneCompleteScript.SceneComplete = true;
                     Button.image.color = Color.green;
                 }
+            }
+            else
+            {
+                Handheld.Vibrate();
+                Color32 shiftColor = new Color32(210, 0, 0, 50);
+                base.DisplayColoredImage(shiftColor, 0.2f);
             }
             // Reset input
             KeyboardInputText.text = "";
@@ -180,30 +147,15 @@ public class AnswerManager1051 : MonoBehaviour
                     sceneCompleteScript.SceneComplete = true;
                     Button.image.color = Color.green;
                 }
+                else
+                {
+                    Color32 shiftColor = new Color32(210, 0, 0, 50);
+                    base.DisplayColoredImage(shiftColor, 0.2f);
+                }
             }
-        }   
 
-        // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
-        popUpCanvasGroup.alpha = 0f;
-    }
-
-    public void activateInput()
-    {
-        isInputActive = !isInputActive;
-
-        if (isInputActive == true)
-        { 
-            // Reset answerbox input
-            userInput = "";
-            inputText.text = "";
-            // Show answerbox
-            popUpCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            // Close answerbox
+            // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
             popUpCanvasGroup.alpha = 0f;
-            checkStringInput();
         }
     }
 }

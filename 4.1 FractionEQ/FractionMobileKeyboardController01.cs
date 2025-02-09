@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class FractionMobileKeyboardController01 : MonoBehaviour
@@ -8,16 +9,64 @@ public class FractionMobileKeyboardController01 : MonoBehaviour
     public bool secondInputBool;
     public AnswerManager41 script;
 
+    // Variables for blinking effect
+    private float onDuration = 1f; // Duration for image to be visible
+    private float offDuration = 0.5f; // Duration for image to be invisible
+    private bool isImageVisible = false;
+    private float nextActionTime = 0.0f;
+
+    private bool blinkingEnabled_step1 = true;
+    private bool blinkingEnabled_step2 = false;
+
+    public Image questionMark_step1;
+    public Image questionMark_step2;
+
+    // Call this method in Update to handle blinking
+    void Update()
+    {
+        if (Time.time > nextActionTime)
+        {
+            // Toggle visibility bool
+            isImageVisible = !isImageVisible;
+
+            secondInputBool = script.secondInput;
+            if (secondInputBool)
+            {
+                if (blinkingEnabled_step2)
+                    questionMark_step2.enabled = isImageVisible;
+                //Debug.LogError($"questionMark_step2.enabled{questionMark_step2.enabled}");
+                //Debug.LogError($"questionMark_step2.enabled{questionMark_step2.enabled}");
+            }
+            else 
+            {
+                if(blinkingEnabled_step1)
+                    questionMark_step1.enabled = isImageVisible;  
+                //Debug.LogError($"questionMark_step1.enabled{questionMark_step1.enabled}");           
+            }
+            // Set next action time
+            nextActionTime = Time.time + (isImageVisible ? onDuration : offDuration);
+        }
+    }
+
     // Function to add a number to the text
     public void NumberInput(int number)
     {
         secondInputBool = script.secondInput;
-        Vibrator.Vibrate(100);
+        Vibrator.Vibrate(50);
 
         if (secondInputBool == true)
+        {
+            blinkingEnabled_step2 = false;
+            questionMark_step2.enabled = false;
             denominator.text += number.ToString();
+        }
         else
+        {
+            blinkingEnabled_step1 = false;
+            questionMark_step1.enabled = false;
+            blinkingEnabled_step2 = true;
             numerator.text += number.ToString();
+        }
     }
 
     // Function to delete the last character in the text

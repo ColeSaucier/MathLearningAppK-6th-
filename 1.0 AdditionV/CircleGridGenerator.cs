@@ -36,6 +36,8 @@ public class CircleGridGenerator : MonoBehaviour
     private bool isDraggingComb;
     public Vector3 colliderBoundsPreset;
 
+    public AnimationClip shakeAnimationClip;
+    private GameObject circleGroupAnimationParent;
 
     void Start()
     {
@@ -48,8 +50,29 @@ public class CircleGridGenerator : MonoBehaviour
         // Calculate the total number of columns based on full columns and remaining circles
         int totalColumns = remainingCircles > 0 ? fullColumns + 1 : fullColumns;
 
+
+        // Create a parent object to group the circles
+        circleGroupAnimationParent = new GameObject("circleGroupAnimationParent");
+        circleGroupAnimationParent.tag = "temporary";
+
         // Create a parent object to group the circles
         circleGroup = new GameObject("CircleGroup");
+        circleGroup.transform.SetParent(circleGroupAnimationParent.transform);
+        circleGroup.tag = "temporary";
+
+        Animation animation = circleGroupAnimationParent.AddComponent<Animation>();
+
+        if (shakeAnimationClip != null)
+        {
+            animation.clip = shakeAnimationClip;
+            animation.AddClip(animation.clip, "ShakeSmallCircle");
+            animation.Play("ShakeSmallCircle");
+            //Debug.LogError("Animation is playing: " + animation.isPlaying); 
+        }
+        else
+        {
+            Debug.LogError("Animation clip 'ShakeSmallCircle' not found or not assigned!");
+        }
 
         // Calculate the center position of the grid
         Vector3 centerPosition = new Vector3((totalColumns - 1) * circleSpacing / 2f, 0f, 0f);
@@ -225,6 +248,7 @@ public class CircleGridGenerator : MonoBehaviour
 
         // Create a parent object to group the circles
         COMBINEDcircleGroup = new GameObject("COMBINEDCircleGroup");
+        COMBINEDcircleGroup.tag = "temporary";
 
         // Calculate the center position of the grid
         Vector3 centerPosition = new Vector3((totalColumns - 1) * circleSpacing / 2f, 0f, 0f);

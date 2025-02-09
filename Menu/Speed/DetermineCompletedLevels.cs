@@ -68,9 +68,11 @@ public class DetermineCompletedLevels : MonoBehaviour
     public string allSceneRatingsjsonFilePath;
     private string allSceneRatingsJsonString;
     private AllSceneRatingsData allSceneRatingObject;
+
     void Start()
     {
         filePath = Path.Combine(Application.persistentDataPath, completedLevelTextFilePath);
+        //Debug.LogError(filePath);
         completedLevels = GetUniqueValuesFromFile();
         //Debug.Log("completedLevels: " + string.Join(", ", completedLevels.ToArray()));
 
@@ -129,26 +131,26 @@ public class DetermineCompletedLevels : MonoBehaviour
         DeactivateButtonIfNotInList(Button19);
         DeactivateButtonIfNotInList(Button20);
 
-        UpdateTextRatings(text1);
-        UpdateTextRatings(text2);
-        UpdateTextRatings(text3);
-        UpdateTextRatings(text4);
-        UpdateTextRatings(text5);
-        UpdateTextRatings(text6);
-        UpdateTextRatings(text7);
-        UpdateTextRatings(text8);
-        UpdateTextRatings(text9);
-        UpdateTextRatings(text10);
-        UpdateTextRatings(text11);
-        UpdateTextRatings(text12);
-        UpdateTextRatings(text13);
-        UpdateTextRatings(text14);
-        UpdateTextRatings(text15);
-        UpdateTextRatings(text16);
-        UpdateTextRatings(text17);
-        UpdateTextRatings(text18);
-        UpdateTextRatings(text19);
-        UpdateTextRatings(text20);
+        UpdateStarRatings(text1);
+        UpdateStarRatings(text2);
+        UpdateStarRatings(text3);
+        UpdateStarRatings(text4);
+        UpdateStarRatings(text5);
+        UpdateStarRatings(text6);
+        UpdateStarRatings(text7);
+        UpdateStarRatings(text8);
+        UpdateStarRatings(text9);
+        UpdateStarRatings(text10);
+        UpdateStarRatings(text11);
+        UpdateStarRatings(text12);
+        UpdateStarRatings(text13);
+        UpdateStarRatings(text14);
+        UpdateStarRatings(text15);
+        UpdateStarRatings(text16);
+        UpdateStarRatings(text17);
+        UpdateStarRatings(text18);
+        UpdateStarRatings(text19);
+        UpdateStarRatings(text20);
     }
 
     public void DeactivateButtonIfNotInList(Button button)
@@ -168,14 +170,118 @@ public class DetermineCompletedLevels : MonoBehaviour
     {
         ratingString = textUGUI.gameObject.name;
         // text.text = GetPropertyValue(allSceneRatingObject, ratingString);
-        textUGUI.text = allSceneRatingDictionary[ratingString];
+        string rating = allSceneRatingDictionary[ratingString];
     }
 
+    public Vector3 centerPointOffset = Vector3.zero; // Public variable to adjust the center point
+    public Sprite starSprite; // Public reference to set the star image
+    public float starScale = 1.0f; // Public variable to adjust star size
+    public float localOffset; // Example value, adjust as needed
+
+    public void UpdateStarRatings(TextMeshProUGUI textUGUI)
+    {
+        ratingString = textUGUI.gameObject.name;
+        string rating = allSceneRatingDictionary[ratingString];
+        int numberOfStars = int.Parse(rating);
+        
+        // Get the position of the text and adjust with the public offset
+        Vector3 centerPoint = textUGUI.rectTransform.localPosition + centerPointOffset;
+        
+        switch (numberOfStars)
+        {
+            case 0:
+                // Do nothing
+                break;
+            case 1: 
+                GenerateStar(centerPoint, $"{ratingString}_Star1", textUGUI.gameObject);
+                break;
+            case 2:
+
+                GenerateStar(centerPoint + Vector3.left * localOffset, $"{ratingString}_Star1", textUGUI.gameObject);
+                GenerateStar(centerPoint + Vector3.right * localOffset, $"{ratingString}_Star2", textUGUI.gameObject);
+                break;
+            case 3:
+                float angle = 30f * Mathf.Deg2Rad; // Convert angle to radians
+                float xOffset = localOffset * Mathf.Cos(angle);
+                float yOffset = localOffset * Mathf.Sin(angle);
+                centerPoint = centerPoint + new Vector3(0, -10f, 0);
+
+                // Positions of the stars
+                Vector3 star1Position = centerPoint + Vector3.up * localOffset; // Directly above
+                Vector3 star2Position = centerPoint + new Vector3(xOffset, -yOffset, 0); // Right
+                Vector3 star3Position = centerPoint + new Vector3(-xOffset, -yOffset, 0); // Left
+
+                // Generate the stars
+                GenerateStar(star1Position, $"{ratingString}_Star1", textUGUI.gameObject); // Star 1
+                GenerateStar(star2Position, $"{ratingString}_Star2", textUGUI.gameObject); // Star 2
+                GenerateStar(star3Position, $"{ratingString}_Star3", textUGUI.gameObject); // Star 3
+
+                // Calculate distances between the stars
+                //loat distance1_2 = Vector3.Distance(star1Position, star2Position); // Distance between Star 1 and Star 2
+                //float distance1_3 = Vector3.Distance(star1Position, star3Position); // Distance between Star 1 and Star 3
+                //float distance2_3 = Vector3.Distance(star2Position, star3Position); // Distance between Star 2 and Star 3
+
+                // Log the distances for debugging
+                //Debug.LogError($"Distance between Star 1 and Star 2: {distance1_2}");
+                //Debug.LogError($"Distance between Star 1 and Star 3: {distance1_3}");
+                //Debug.LogError($"Distance between Star 2 and Star 3: {distance2_3}");
+                break;
+            default:
+                Debug.LogWarning("Rating out of expected range: " + rating);
+                break;
+        }
+    }
+
+    private void GenerateStar(Vector3 position, string starName, GameObject parentObject)
+    {
+        // Create the star GameObject and set its parent
+        GameObject star = new GameObject(starName);
+        star.transform.SetParent(parentObject.transform, false); // Keep local position, don't use world position
+
+        // Get the RectTransform component to manipulate the UI positioning
+        RectTransform rectTransform = star.AddComponent<RectTransform>();
+
+        // Set the position in local space relative to the parent
+        rectTransform.localPosition = position; // Adjust the position
+
+        // Add Image component to display the star sprite
+        Image image = star.AddComponent<Image>();
+        image.sprite = starSprite; // Set the sprite for the star
+        image.preserveAspect = true; // Optionally preserve the aspect ratio of the sprite
+
+        // Scale the star based on the starScale
+        rectTransform.sizeDelta = new Vector2(starScale, starScale); // Set the size of the image (this is the UI equivalent of scaling the sprite)
+        Debug.LogError($"Position: {position}");
+    }
+
+    private SwipeHandler swipeHandler;
     public void StartAnyScene(Button button)
     {
-        scenesToLoad.Add(SceneManager.LoadSceneAsync(button.gameObject.name));
-        StartCoroutine(LoadingScreen());
+        GameObject transitionAnimationsObject = GameObject.Find("TransitionAnimations");
+        if (transitionAnimationsObject != null)
+        {
+            swipeHandler = transitionAnimationsObject.GetComponent<SwipeHandler>();
+            if (swipeHandler == null)
+            {
+                Debug.LogError("Animator component not found");
+            }
+            else
+            {
+                Debug.LogError("Animator component found");
+            }
+        }
+        else
+        {
+            Debug.LogError("Object not found. //");
+        }
+
+        //Start scene via button name
+        string sceneString = button.gameObject.name;
+        Debug.LogError("Starting Trigger with string: "+sceneString);
+        //StartCoroutine(sceneHandlerScript.StartAnyScene_NoTransition(sceneString));
+        swipeHandler.triggerTransitionByUpdate_SceneName = sceneString;
     }
+
 
     IEnumerator LoadingScreen()
     {
@@ -186,7 +292,7 @@ public class DetermineCompletedLevels : MonoBehaviour
             {
                 progressValue += scenesToLoad[i].progress;
                 // Error below, because no progressbar set in the level Menu
-                progressBar.fillAmount = progressValue / scenesToLoad.Count;
+                //progressBar.fillAmount = progressValue / scenesToLoad.Count;
                 yield return null;
             }
         }

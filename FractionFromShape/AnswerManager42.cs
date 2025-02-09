@@ -4,11 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class AnswerManager42 : MonoBehaviour
+public class AnswerManager42 : AnswerManagerBase
 {
-    public bool SceneComplete;
-    public SceneCompleteMenu sceneCompleteScript;
-    public bool isInputActive = false;
     public bool secondInput = false;
 
     public TwoSeparateObjects objectGenerator;
@@ -18,45 +15,12 @@ public class AnswerManager42 : MonoBehaviour
     public TextMeshProUGUI numerator;
     public TextMeshProUGUI denominator;
     
-    public CanvasGroup popUpCanvasGroup;
-    public Button Button;
-    public string userInput;
-
-    public GameObject ansPanel1;
-    public GameObject ansPanel2;
-    public GameObject keyPanel1;
-    public GameObject keyPanel2;
-
-    public Canvas mobileKeyboard;
-    private bool mobileVersion = true;
     public TextMeshProUGUI keyboardNumerator;
     public TextMeshProUGUI keyboardDenominator;
 
-    public void activateInput()
-    {
-        isInputActive = !isInputActive;
-
-        if (isInputActive == true)
-        { 
-            // Reset answerbox input
-            userInput = "";
-            numerator.text = "";
-            denominator.text = "";
-            // Show answerbox
-            popUpCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            // Close answerbox
-            popUpCanvasGroup.alpha = 0f;
-            secondInput = false;
-            ansPanel1.SetActive(true);
-            ansPanel2.SetActive(false);
-        }
-    }
 
     // Update is called once per frame
-    void Update()
+    public override void Update()
     {
         if (isInputActive)
         {
@@ -83,7 +47,7 @@ public class AnswerManager42 : MonoBehaviour
             }
         }
     }
-    public void checkStringInput()
+    public override void checkStringInput()
     {
         copiedNumerator = objectGenerator.numerator;
         copiedDenominator = objectGenerator.numberOfSides;
@@ -102,17 +66,15 @@ public class AnswerManager42 : MonoBehaviour
                 {
                     Handheld.Vibrate();
                     secondInput = false;
-                    keyPanel1.SetActive(true);
-                    keyPanel2.SetActive(false);
                     keyboardNumerator.text = "";
                     keyboardDenominator.text = "";
+                    Color32 shiftColor = new Color32(210, 0, 0, 50);
+                    base.DisplayColoredImage(shiftColor, 0.2f);
                 }
             }
             else
             {
                 secondInput = true;
-                keyPanel1.SetActive(false);
-                keyPanel2.SetActive(true);
             }
         }
         else
@@ -127,14 +89,16 @@ public class AnswerManager42 : MonoBehaviour
                     activateInput();
                 }
                 else
+                {
                     activateInput();
+                    Color32 shiftColor = new Color32(210, 0, 0, 50);
+                    base.DisplayColoredImage(shiftColor, 0.2f);
+                }
             }
             else
             {
                 secondInput = true;
                 userInput = "";
-                ansPanel1.SetActive(false);
-                ansPanel2.SetActive(true);
             }
         }
     }

@@ -17,7 +17,7 @@ public class PlayerPreferenceManagement : MonoBehaviour
     public Toggle timeToggle;
 
     public InputField userField;
-    public string user;
+    private string user;
 
     private bool settingsViewable = false;
     public CanvasGroup playerSettingsCanvasGroup;
@@ -161,8 +161,8 @@ public class PlayerPreferenceManagement : MonoBehaviour
         settingsViewable = false;
         if (playerSettingsCanvasGroup != null)
         {
-            playerSettingsCanvasGroup.alpha = 0f;
             playerSettingsCanvasGroup.interactable = false;
+            playerSettingsCanvasGroup.alpha = 0f;
             playerSettingsCanvasGroup.blocksRaycasts = false;
         }
     }
@@ -174,8 +174,8 @@ public class PlayerPreferenceManagement : MonoBehaviour
             settingsViewable = true;
             if (playerSettingsCanvasGroup != null)
             {
-                playerSettingsCanvasGroup.alpha = 1f;
                 playerSettingsCanvasGroup.interactable = true;
+                playerSettingsCanvasGroup.alpha = 1f;
                 playerSettingsCanvasGroup.blocksRaycasts = true;
             }
         }
@@ -183,6 +183,12 @@ public class PlayerPreferenceManagement : MonoBehaviour
         {
             HidePlayerSettingsCanvas();
         }
+    }
+
+    public void UpdateGold()
+    {
+        //playerObject.gemTotal 
+        SavePlayerData();
     }
 
     [Serializable]
@@ -194,5 +200,9 @@ public class PlayerPreferenceManagement : MonoBehaviour
         public bool timeEnabled;
         public bool timeEnabledNotPace;
         public bool leaderboardEnabled;
+        public string swipeRight;
+        public string swipeLeft;
+        public string swipeDown;
+        public string swipeUp;
     }
 }

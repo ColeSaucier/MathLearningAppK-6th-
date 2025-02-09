@@ -4,43 +4,21 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class AnswerManager415 : MonoBehaviour
+public class AnswerManager415 : AnswerManagerBase
 {
-    public bool SceneComplete;
-    public SceneCompleteMenu sceneCompleteScript;
-    public bool isInputActive = false;
     public bool secondInput = false;
-
     public FractionHandlerHard fractionHandler;
     public int copiedNumerator;
     public int copiedDenominator;
 
     public TextMeshProUGUI numerator;
     public TextMeshProUGUI denominator;
-    
-    public CanvasGroup popUpCanvasGroup;
-    public Button Button;
-    public string userInput;
 
-    public Canvas mobileKeyboard;
-    private bool mobileVersion = true;
     public TextMeshProUGUI keyboardNumerator;
     public TextMeshProUGUI keyboardDenominator;
 
-    public void activateInput()
-    {
-        isInputActive = true;
-        userInput = "";
-
-        // Show the pop-up canvas by setting its alpha to 1 (fully opaque)
-        popUpCanvasGroup.alpha = 1f;
-        popUpCanvasGroup.interactable = true; // Enable interactions with the pop-up canvas
-        Button.interactable = false;
-        // keyboard = TouchScreenKeyboard.Open(userInput, TouchScreenKeyboardType.Default);
-    }
-
     // Update is called once per frame
-    void Update()
+    public override void Update()
     {
         if (isInputActive)
         {
@@ -64,7 +42,7 @@ public class AnswerManager415 : MonoBehaviour
                 numerator.text = userInput;
         }
     }
-    public void checkStringInput()
+    public override void checkStringInput()
     {
         copiedNumerator = fractionHandler.numeratorAns;
         copiedDenominator = fractionHandler.denominatorAns;
@@ -80,11 +58,17 @@ public class AnswerManager415 : MonoBehaviour
             else
             {
                 if (secondInput == true)
+                {
                     keyboardDenominator.text = "";
+                }
                 else
+                {
                     keyboardNumerator.text = "";
+                }
                 
                 Handheld.Vibrate();
+                Color32 shiftColor = new Color32(210, 0, 0, 50);
+                base.DisplayColoredImage(shiftColor, 0.2f);
             }
         }
         else
@@ -95,6 +79,11 @@ public class AnswerManager415 : MonoBehaviour
                 sceneCompleteScript.SceneComplete = true;
                 Button.image.color = Color.green;
             }
+            else
+            {
+                Color32 shiftColor = new Color32(210, 0, 0, 50);
+                base.DisplayColoredImage(shiftColor, 0.2f);
+            }
         
             isInputActive = false;
             // Hide the pop-up canvas by setting its alpha to 0 (fully transparent)
@@ -103,3 +92,4 @@ public class AnswerManager415 : MonoBehaviour
         }
     }
 }
+

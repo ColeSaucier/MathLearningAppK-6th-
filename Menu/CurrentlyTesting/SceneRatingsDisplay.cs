@@ -26,7 +26,7 @@ public class SceneRatingsDisplay : MonoBehaviour
     private AllSceneRatingsData allSceneRatingObject;
     private string allSceneRatingsJsonString;
 
-    private IEnumerator Start()
+    /*private IEnumerator Start()
     {
         if (displayCanvasGroup != null)
         {
@@ -35,7 +35,7 @@ public class SceneRatingsDisplay : MonoBehaviour
 
         yield return new WaitForSeconds(0.4f); // Wait a short duration before displaying ratings
         DisplaySceneRatings();
-    }
+    }*/
 
     public void SetCanvasGroupAlphaZero()
     {

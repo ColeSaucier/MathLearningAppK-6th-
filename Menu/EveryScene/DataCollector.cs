@@ -21,8 +21,10 @@ public class DataCollector : MonoBehaviour
     private void LoadVariableData()
     {
         string filePath = Path.Combine(Application.persistentDataPath, variablejsonFilePath);
+        //Debug.LogError(filePath);
         variableJsonString = File.ReadAllText(filePath);
         variableObject = JsonUtility.FromJson<VariableData>(variableJsonString);
+        //Debug.LogError("variableJsonString - Load1: " + variableJsonString);
     }
 
     //string query = FormatActivity_repsInsert();
@@ -33,7 +35,7 @@ public class DataCollector : MonoBehaviour
         LoadVariableData();
 
         // Get data values 
-        string user = playerData_script.user;
+        string user = variableObject.user;
         string level = SceneManager.GetActiveScene().name;
         float duration = sceneCompleteMenu_script.elapsedTimeFinal;
         int setId = variableObject.setId + 1;
@@ -41,7 +43,9 @@ public class DataCollector : MonoBehaviour
         bool completedBool = sceneCompleteMenu_script.SceneWASCompleted;
         //bool timeEnabled = sceneCompleteMenu_script.timeEnabled;
 
+        //Debug.LogError($"INSERT INTO Activity_reps (user, level, duration, thumbsUp, setId, completedBool) VALUES ('{user}', '{level}', {duration}, {thumbsUp}, {setId}, {completedBool})");
 
+        
         // Format the insert query
         string insertQuery = $"INSERT INTO Activity_reps (user, level, duration, thumbsUp, setId, completedBool) VALUES ('{user}', '{level}', {duration}, {thumbsUp}, {setId}, {completedBool})";
 

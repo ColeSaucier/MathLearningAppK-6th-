@@ -5,10 +5,6 @@ using UnityEngine.UI;
 
 public class clickOnAnswerBox0751 : MonoBehaviour
 {
-    public Button answerButton;
-    public bool isInputActive = false;
-    public CanvasGroup popUpCanvasGroup; // Reference to the pop-up canvas's CanvasGroup component
-
     //private GameObject userInput;
     public static bool firstAnswerCorrect = false;
     public static bool secondAnswerCorrect = false;
@@ -17,7 +13,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
     private bool sceneComplete = false;
 
     public float spacing = 1f; // Spacing between shapes
-    GameObject answer = null;
+    public GameObject answer = null;
 
     private GameObject rowAnswerGroup1;
     private GameObject rowAnswerGroup2;
@@ -50,148 +46,119 @@ public class clickOnAnswerBox0751 : MonoBehaviour
         rowAnswerGroup2.transform.SetParent(rowAnswerGroupsParent.transform);
         rowAnswerGroup3.transform.SetParent(rowAnswerGroupsParent.transform);
 
+        MakeVisibleCurrentRowAnswers();
     }
 
-    public void activateInput()
+    void MakeVisibleCurrentRowAnswers()
     {
-        if (sceneComplete != true)
+        VisibilityController visibilityController = GetComponent<VisibilityController>();
+        // Determine the lowest correct answer that is false
+        if (!firstAnswerCorrect)
         {
-            isInputActive = !isInputActive;
-            if (isInputActive)
+            Debug.LogError("This Ran");
+            // The first answer is incorrect
+            // You can add the code for handling this case here
+            ShapeGenerator1 shapeGenerator1 = FindObjectOfType<ShapeGenerator1>();
+            answer = shapeGenerator1.GetShapeAnswer();
+            currentRowAnswers = rowAnswerGroup1;
+            visibilityController.SetChildObjectsVisibility(currentRowAnswers, true);
+        }
+        else if (!secondAnswerCorrect)
+        {
+            // The first answer is correct but the second answer is incorrect
+            // You can add the code for handling this case here
+            ShapeGenerator2 shapeGenerator2 = FindObjectOfType<ShapeGenerator2>();
+            answer = shapeGenerator2.GetShapeAnswer();
+            currentRowAnswers = rowAnswerGroup2;
+            visibilityController.SetChildObjectsVisibility(rowAnswerGroup2, true);
+        }
+        else if (!thirdAnswerCorrect)
+        {
+            // The first and second answers are correct but the third answer is incorrect
+            // You can add the code for handling this case here
+            ShapeGenerator3 shapeGenerator3 = FindObjectOfType<ShapeGenerator3>();
+            answer = shapeGenerator3.GetShapeAnswer();
+            currentRowAnswers = rowAnswerGroup3;
+            visibilityController.SetChildObjectsVisibility(rowAnswerGroup3, true);
+        }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        if (answer == null)
+            MakeVisibleCurrentRowAnswers();
+
+        // Check for mouse input click
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Create a ray from the mouse position
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            // Create a RaycastHit variable to store information about the hit
+            RaycastHit hit;
+
+            // Perform the raycast and check if it hits something
+            if (Physics.Raycast(ray, out hit))
             {
-                answerButton.image.color = Color.grey;
-
-                VisibilityController visibilityController = GetComponent<VisibilityController>();
-                popUpCanvasGroup.alpha = 1f; // Set the pop-up canvas's alpha to 0 (fully transparent) initially
-                popUpCanvasGroup.interactable = true; // Disable interactions with the pop-up canvas
-                if (lastClickedObject != null)
+                if (hit.collider.transform.IsChildOf(currentRowAnswers.transform))
                 {
-                    lastClickedObject.GetComponent<Renderer>().material.color = Color.white;
-                    lastClickedObject = null;
-                }
-
-                // Determine the lowest correct answer that is false
-                if (!firstAnswerCorrect)
-                {
-                    // The first answer is incorrect
-                    // You can add the code for handling this case here
-                    ShapeGenerator1 shapeGenerator1 = FindObjectOfType<ShapeGenerator1>();
-                    answer = shapeGenerator1.GetShapeAnswer();
-                    currentRowAnswers = rowAnswerGroup1;
-                    visibilityController.SetChildObjectsVisibility(currentRowAnswers, true);
-                }
-                else if (!secondAnswerCorrect)
-                {
-                    // The first answer is correct but the second answer is incorrect
-                    // You can add the code for handling this case here
-                    ShapeGenerator2 shapeGenerator2 = FindObjectOfType<ShapeGenerator2>();
-                    answer = shapeGenerator2.GetShapeAnswer();
-                    currentRowAnswers = rowAnswerGroup2;
-                    visibilityController.SetChildObjectsVisibility(rowAnswerGroup2, true);
-                }
-                else if (!thirdAnswerCorrect)
-                {
-                    // The first and second answers are correct but the third answer is incorrect
-                    // You can add the code for handling this case here
-                    ShapeGenerator3 shapeGenerator3 = FindObjectOfType<ShapeGenerator3>();
-                    answer = shapeGenerator3.GetShapeAnswer();
-                    currentRowAnswers = rowAnswerGroup3;
-                    visibilityController.SetChildObjectsVisibility(rowAnswerGroup3, true);
-                }
-                else
-                {
-                    // All answers are correct
-                    // You can add the code for handling this case here
-                }
-            }
-
-            if (!isInputActive)
-            {
-                answerButton.image.color = Color.white;
-
-                VisibilityController visibilityController = GetComponent<VisibilityController>();
-                visibilityController.SetChildObjectsVisibility(currentRowAnswers, false);
-                popUpCanvasGroup.alpha = 0f; // Set the pop-up canvas's alpha to 0 (fully transparent) initially
-                popUpCanvasGroup.interactable = false; // Disable interactions with the pop-up canvas
-
-                if (lastClickedObject != null)
-                {
-                    // Handle correct answer input
-                    if (lastClickedObject.name == answer.name)
+                    if (lastClickedObject != null)
                     {
-                        // Determine the lowest correct answer that is false
-                        if (!firstAnswerCorrect)
-                        {
-                            // The first answer is incorrect
-                            // You can add the code for handling this case here
-                            firstAnswerCorrect = true;
-                            SetShapeAlpha(answer, 1f);
-                        }
-                        else if (!secondAnswerCorrect)
-                        {
-                            // The first answer is correct but the second answer is incorrect
-                            // You can add the code for handling this case here
-                            secondAnswerCorrect = true;
-                            SetShapeAlpha(answer, 1f);
-                        }
-                        else if (!thirdAnswerCorrect)
-                        {
-                            // The first and second answers are correct but the third answer is incorrect
-                            // You can add the code for handling this case here
-                            thirdAnswerCorrect = true;
-                            answerButton.image.color = Color.green;
-                            sceneComplete = true;
-                            sceneCompleteScript.SceneComplete = true;
-                            SetShapeAlpha(answer, 1f);
-                        }
+                        lastClickedObject.GetComponent<Renderer>().material.color = Color.white;
+                        lastClickedObject = null;
                     }
-                    else
+
+                    // Check if the hit object has a Renderer component (to ensure it's a visible object)
+                    Renderer renderer = hit.collider.GetComponent<Renderer>();
+                    if (renderer != null)
                     {
-                        Handheld.Vibrate();
+                        // Store the last clicked object or reference to the object
+                        lastClickedObject = hit.collider.gameObject;
+                        hit.collider.GetComponent<Renderer>().material.color = new Color(210/255f, 0/255f, 0/255f);
+                        TestPlayerInput();
                     }
                 }
             }
         }
     }
-
-    // Update is called once per frame
-    void Update()
+    void TestPlayerInput()
     {
-        // Check for mouse input click
-        if (Input.GetMouseButtonDown(0))
+        if (lastClickedObject != null)
         {
-            if (isInputActive)
+            // Handle correct answer input
+            if (lastClickedObject.name == answer.name)
             {
-                // Create a ray from the mouse position
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                // Create a RaycastHit variable to store information about the hit
-                RaycastHit hit;
-
-                // Perform the raycast and check if it hits something
-                if (Physics.Raycast(ray, out hit))
+                // Determine the lowest correct answer that is false
+                if (!firstAnswerCorrect)
                 {
-                    if (hit.collider.transform.IsChildOf(currentRowAnswers.transform))
-                    {
-                        if (lastClickedObject != null)
-                        {
-                            lastClickedObject.GetComponent<Renderer>().material.color = Color.white;
-                            lastClickedObject = null;
-                        }
-
-                        // Check if the hit object has a Renderer component (to ensure it's a visible object)
-                        Renderer renderer = hit.collider.GetComponent<Renderer>();
-                        if (renderer != null)
-                        {
-                            // Store the last clicked object or reference to the object
-                            lastClickedObject = hit.collider.gameObject;
-                            hit.collider.GetComponent<Renderer>().material.color = new Color(210/255f, 0/255f, 0/255f);
-
-                            // Now you have a reference to the object that was clicked, and you can use it as needed.
-                            // For example, you can change its color or perform other actions.
-                        }
-                    }
+                    // The first answer is incorrect
+                    // You can add the code for handling this case here
+                    firstAnswerCorrect = true;
+                    SetShapeAlpha(answer, 1f);
                 }
+                else if (!secondAnswerCorrect)
+                {
+                    // The first answer is correct but the second answer is incorrect
+                    // You can add the code for handling this case here
+                    secondAnswerCorrect = true;
+                    SetShapeAlpha(answer, 1f);
+                }
+                else if (!thirdAnswerCorrect)
+                {
+                    // The first and second answers are correct but the third answer is incorrect
+                    // You can add the code for handling this case here
+                    thirdAnswerCorrect = true;
+                    sceneComplete = true;
+                    sceneCompleteScript.SceneComplete = true;
+                    SetShapeAlpha(answer, 1f);
+                }
+                VisibilityController visibilityController = GetComponent<VisibilityController>();
+                visibilityController.SetChildObjectsVisibility(currentRowAnswers, false);
+                MakeVisibleCurrentRowAnswers();
+            }
+            else
+            {
+                Handheld.Vibrate();
             }
         }
     }
@@ -213,7 +180,6 @@ public class clickOnAnswerBox0751 : MonoBehaviour
 
         // Calculate the center offset
         float xOffset = -(((length - 1) / 2f) * spacing);
-        float yOffset = Camera.main.ScreenToWorldPoint(new Vector3(240f, 240f, 240f)).y;
 
         // Generate child objects (shapes) and position them in RowAnswerGroup1
         for (int i = 0; i < length; i++)
@@ -230,9 +196,8 @@ public class clickOnAnswerBox0751 : MonoBehaviour
 
             // Position the shape along the x-axis with spacing
             float xPosition = xOffset + (i * spacing);
-            float yPosition = yOffset / 2;
 
-            shapeObject.transform.localPosition = new Vector3(xPosition, 0, 0f);
+            shapeObject.transform.localPosition = new Vector3(xPosition, -3.3f, 0f);
 
             // Add a BoxCollider to the shape object
             BoxCollider boxCollider = shapeObject.AddComponent<BoxCollider>();
@@ -278,7 +243,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
             float xPosition = xOffset + (i * spacing);
             float yPosition = yOffset / 2;
 
-            shapeObject.transform.localPosition = new Vector3(xPosition, 0f, 0f);
+            shapeObject.transform.localPosition = new Vector3(xPosition, -3.3f, 0f);
 
             // Add a BoxCollider to the shape object
             BoxCollider boxCollider = shapeObject.AddComponent<BoxCollider>();
@@ -305,7 +270,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
 
         // Calculate the center offset
         float xOffset = -(((length - 1) / 2f) * spacing);
-        float yOffset = Camera.main.ScreenToWorldPoint(new Vector3(0f, 2.5f, 0f)).y;
+        float yOffset = Camera.main.ScreenToWorldPoint(new Vector3(0f, -3.3f, 0f)).y;
 
         // Generate child objects (shapes) and position them in RowAnswerGroup3
         for (int i = 0; i < length; i++)
@@ -324,7 +289,7 @@ public class clickOnAnswerBox0751 : MonoBehaviour
             float xPosition = xOffset + (i * spacing);
             float yPosition = yOffset / 2;
 
-            shapeObject.transform.localPosition = new Vector3(xPosition, 0f, 0f);
+            shapeObject.transform.localPosition = new Vector3(xPosition, -3.3f, 0f);
 
             // Add a BoxCollider to the shape object
             BoxCollider boxCollider = shapeObject.AddComponent<BoxCollider>();

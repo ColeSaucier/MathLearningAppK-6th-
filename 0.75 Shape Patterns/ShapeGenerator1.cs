@@ -14,7 +14,7 @@ public class ShapeGenerator1 : MonoBehaviour
     public GameObject[] shapePrefabs; // Array of shape prefabs
     public GameObject questionMarkPrefab; // Prefab for the question mark object
 
-    private GameObject shapeAnswer; // The chosen invisible shape
+    public GameObject shapeAnswer; // The chosen invisible shape
 
     public GameObject GetShapeAnswer()
     {
@@ -71,19 +71,6 @@ public class ShapeGenerator1 : MonoBehaviour
         // Instantiate the question mark prefab below the invisible shape
         Vector3 questionMarkPosition = shapeAnswer.transform.position;
         Instantiate(questionMarkPrefab, questionMarkPosition, Quaternion.identity, parentGroup.transform);
-
-        /*
-        // Apply the offset to center the parent group
-        if (ScreenModifierCalculator.isPortrait)
-        {
-            scale = ScreenModifierCalculator.portraitModifier;
-        }
-        else
-        {
-            scale = ScreenModifierCalculator.landscapeModifier + 0.3f;
-            centerYOffset += 0.75f;
-        }
-        */
         scale = 1f;
         parentGroup.transform.localScale = new Vector3(localScale,localScale,localScale) * scale;
         parentGroup.transform.position = new Vector3(-(((shapeCount - 0.95f) / 2) * spacing * localScale * scale), centerYOffset, 0f);
